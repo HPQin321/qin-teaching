@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实战工坊：化工废水芬顿处理方案设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 角色选择页面 */
+        .role-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px 0;
+        }
+
+        .role-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .role-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .role-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .role-card h3 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .role-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .role-tasks {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .role-tasks li {
+            padding: 8px 0;
+            color: #555;
+            border-left: 3px solid #667eea;
+            padding-left: 12px;
+            margin-bottom: 8px;
+        }
+
+        /* 任务页面 */
+        .task-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .task-title h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .task-title span {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar .bar {
+            width: 200px;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .task-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .task-sidebar {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .task-sidebar h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .task-sidebar ul {
+            list-style: none;
+        }
+
+        .task-sidebar li {
+            padding: 10px 0;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .task-sidebar li:last-child {
+            border-bottom: none;
+        }
+
+        .task-workspace {
+            background: #fafafa;
+            padding: 25px;
+            border-radius: 15px;
+            min-height: 400px;
+        }
+
+        /* 交互组件 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .slider-group {
+            margin-bottom: 25px;
+        }
+
+        .slider-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 80px;
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .result-panel {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .result-panel h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .task-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        /* 提示框 */
+        .hint-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .hint-box p {
+            color: #856404;
+            margin: 0;
+        }
+
+        /* 成功页面 */
+        .success-container {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .success-container h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .success-container p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .summary-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .task-content {
+                grid-template-columns: 1fr;
+            }
+
+            .task-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .role-selection {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🧪 实战工坊</h1>
+            <p>化工废水芬顿处理方案设计</p>
+        </header>
+
+        <!-- 角色选择页面 -->
+        <div id="roleSelectionPage" class="page active">
+            <h2 style="text-align: center; color: white; margin-bottom: 30px; font-size: 1.8rem;">
+                选择你的角色
+            </h2>
+            <p style="text-align: center; color: white; opacity: 0.9; margin-bottom: 40px;">
+                选择一个角色开始项目协作，体验完整的工程思维
+            </p>
+            
+            <div class="role-selection">
+                <!-- 工艺计算工程师 -->
+                <div class="role-card" onclick="selectRole('engineer')">
+                    <div class="role-icon">🔬</div>
+                    <h3>工艺计算工程师</h3>
+                    <p>负责设计芬顿反应的工艺参数和投药策略，是整个方案的核心计算者。</p>
+                    <ul class="role-tasks">
+                        <li>计算H₂O₂和Fe²⁺最佳投加比</li>
+                        <li>确定反应停留时间</li>
+                        <li>评估处理效率和成本</li>
+                    </ul>
+                </div>
+
+                <!-- 设备结构设计师 -->
+                <div class="role-card" onclick="selectRole('designer')">
+                    <div class="role-icon">⚙️</div>
+                    <h3>设备结构设计师</h3>
+                    <p>负责设计反应池、搅拌装置和加药系统的结构方案。</p>
+                    <ul class="role-tasks">
+                        <li>确定反应器容积和类型</li>
+                        <li>设计混合搅拌方式</li>
+                        <li>规划加药点位布局</li>
+                    </ul>
+                </div>
+
+                <!-- 环境数据分析师 -->
+                <div class="role-card" onclick="selectRole('analyst')">
+                    <div class="role-icon">📊</div>
+                    <h3>环境数据分析师</h3>
+                    <p>负责收集分析水质数据，评估处理效果，用数据驱动决策。</p>
+                    <ul class="role-tasks">
+                        <li>监测进出水COD、pH指标</li>
+                        <li>分析数据趋势和规律</li>
+                        <li>建立效果预测模型</li>
+                    </ul>
+                </div>
+
+                <!-- 资源化策略专家 -->
+                <div class="role-card" onclick="selectRole('expert')">
+                    <div class="role-icon">♻️</div>
+                    <h3>资源化策略专家</h3>
+                    <p>负责探索污泥资源化利用和成本优化路径，推动可持续发展。</p>
+                    <ul class="role-tasks">
+                        <li>评估污泥处置方案</li>
+                        <li>分析运行成本和效益</li>
+                        <li>探索副产物利用价值</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务页面 -->
+        <div id="taskPage" class="page">
+            <div class="task-container">
+                <div class="task-header">
+                    <div class="task-title">
+                        <h2 id="roleTitle">工艺计算工程师</h2>
+                        <span id="taskSubtitle">任务 1/3：理论回顾</span>
+                    </div>
+                    <div class="progress-bar">
+                        <span>进度:</span>
+                        <div class="bar">
+                            <div class="fill" id="progressFill" style="width: 33%"></div>
+                        </div>
+                        <span id="progressText">33%</span>
+                    </div>
+                </div>
+
+                <div class="task-content">
+                    <div class="task-sidebar">
+                        <h4>📋 任务清单</h4>
+                        <ul id="taskList">
+                            <!-- 动态生成 -->
+                        </ul>
+                        <div class="hint-box" style="margin-top: 20px;">
+                            <p>💡 提示：完成当前任务后，点击"下一步"继续</p>
+                        </div>
+                    </div>
+
+                    <div class="task-workspace" id="workspace">
+                        <!-- 动态生成任务内容 -->
+                    </div>
+                </div>
+
+                <div class="task-navigation">
+                    <button class="btn btn-secondary" onclick="goBack()">← 返回角色选择</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextTask()">下一步 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成功页面 -->
+        <div id="successPage" class="page">
+            <div class="task-container success-container">
+                <div class="success-icon">🎉</div>
+                <h2>恭喜你完成所有任务！</h2>
+                <p>你已经成功完成了作为<span id="completedRole">工艺计算工程师</span>的所有学习任务，掌握了该角色的核心知识和技能。</p>
+                
+                <div class="summary-card">
+                    <h3>📊 学习成果总结</h3>
+                    <div id="summaryContent">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="goBack()" style="margin-right: 15px;">
+                        ← 返回角色选择
+                    </button>
+                    <button class="btn btn-primary" onclick="alert('更多角色内容正在开发中，敬请期待！')">
+                        尝试其他角色 →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let currentRole = null;
+        let currentTaskIndex = 0;
+        let taskData = {};
+
+        // 角色配置
+        const roleConfig = {
+            engineer: {
+                name: '工艺计算工程师',
+                icon: '🔬',
+                tasks: [
+                    {
+                        title: '理论回顾：芬顿反应机理',
+                        content: `
+                            <h3>📚 芬顿反应核心知识</h3>
+                            <div class="hint-box">
+                                <p>芬顿反应是利用Fe²⁺催化H₂O₂产生强氧化性的羟基自由基(•OH)，氧化降解有机污染物的高级氧化技术。</p>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <p><strong>反应方程式：</strong></p>
+                                <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; margin: 10px 0;">
+                                    Fe²⁺ + H₂O₂ → Fe³⁺ + •OH + OH⁻
+                                </p>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <p><strong>关键影响因素：</strong></p>
+                                <ul style="line-height: 2; color: #666;">
+                                    <li>• H₂O₂投加量：直接影响氧化能力</li>
+                                    <li>• Fe²⁺催化浓度：决定反应速率</li>
+                                    <li>• pH值：最佳范围3-4</li>
+                                    <li>• 反应时间：通常30-60分钟</li>
+                                </ul>
+                            </div>
+                        `,
+                        summary: '掌握了芬顿反应的基本机理和影响因素'
+                    },
+                    {
+                        title: '参数计算：最佳投加比',
+                        content: `
+                            <h3>🧮 工艺参数计算器</h3>
+                            <p style="color: #666; margin-bottom: 20px;">调整参数，观察对处理效果和成本的影响</p>
+                            
+                            <div class="slider-group">
+                                <label>进水COD浓度 (mg/L)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="codInput" min="100" max="2000" value="800" oninput="calculateFenton()">
+                                    <span class="slider-value" id="codValue">800 mg/L</span>
+                                </div>
+                            </div>
+
+                            <div class="slider-group">
+                                <label>H₂O₂投加量 (mg/L)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="h2o2Input" min="50" max="1000" value="300" oninput="calculateFenton()">
+                                    <span class="slider-value" id="h2o2Value">300 mg/L</span>
+                                </div>
+                            </div>
+
+                            <div class="slider-group">
+                                <label>Fe²⁺投加量 (mg/L)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="fe2Input" min="10" max="200" value="80" oninput="calculateFenton()">
+                                    <span class="slider-value" id="fe2Value">80 mg/L</span>
+                                </div>
+                            </div>
+
+                            <div class="slider-group">
+                                <label>反应时间 (分钟)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="timeInput" min="15" max="90" value="45" oninput="calculateFenton()">
+                                    <span class="slider-value" id="timeValue">45 min</span>
+                                </div>
+                            </div>
+
+                            <div class="result-panel">
+                                <h4>📊 预测结果</h4>
+                                <div class="result-item">
+                                    <span class="result-label">COD去除率</span>
+                                    <span class="result-value" id="removalRate">75%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">出水COD浓度</span>
+                                    <span class="result-value" id="effluentCod">200 mg/L</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">药剂成本</span>
+                                    <span class="result-value" id="chemicalCost">¥2.4/m³</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">投加比 (H₂O₂:Fe²⁺)</span>
+                                    <span class="result-value" id="dosageRatio">3.75:1</span>
+                                </div>
+                            </div>
+                        `,
+                        summary: '学会了计算和优化芬顿反应的工艺参数'
+                    },
+                    {
+                        title: '效果预测：成本效益分析',
+                        content: `
+                            <h3>💰 成本效益优化</h3>
+                            <p style="color: #666; margin-bottom: 20px;">基于你的参数配置，进行综合评估</p>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">📈</div>
+                                    <div style="font-weight: 600; color: #1976d2;">处理效率</div>
+                                    <div style="font-size: 1.5rem; color: #1976d2; margin-top: 10px;" id="efficiencyScore">85分</div>
+                                </div>
+                                <div style="background: #c8e6c9; padding: 20px; border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">💵</div>
+                                    <div style="font-weight: 600; color: #388e3c;">经济性</div>
+                                    <div style="font-size: 1.5rem; color: #388e3c; margin-top: 10px;" id="economicScore">78分</div>
+                                </div>
+                            </div>
+
+                            <div class="result-panel">
+                                <h4>🎯 优化建议</h4>
+                                <div id="optimizationTips" style="color: #666; line-height: 1.8;">
+                                    <p>• 当前H₂O₂投加量适中，能有效保证处理效果</p>
+                                    <p>• Fe²⁺浓度在合理范围，催化效果良好</p>
+                                    <p>• 建议将反应时间调整为40分钟，可降低运行成本</p>
+                                    <p>• 投加比接近理论最佳值(3-4:1)，继续保持</p>
+                                </div>
+                            </div>
+
+                            <div class="hint-box" style="margin-top: 20px;">
+                                <p><strong>💡 学习要点：</strong>工程实践需要在处理效率、经济成本和环境友好之间找到平衡点</p>
+                            </div>
+                        `,
+                        summary: '理解了成本效益分析的重要性，学会了参数优化'
+                    }
+                ]
+            },
+            designer: {
+                name: '设备结构设计师',
+                icon: '⚙️',
+                tasks: [
+                    {
+                        title: '工艺参数解读',
+                        content: `
+                            <h3>📐 从工艺到设备</h3>
+                            <div class="hint-box">
+                                <p>设备设计必须基于工艺参数，将理论计算转化为工程实现。</p>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <h4>关键设计参数</h4>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                    <p><strong>处理量：</strong>1000 m³/d</p>
+                                    <p><strong>反应时间：</strong>45分钟</p>
+                                    <p><strong>投加方式：</strong>多点投加</p>
+                                    <p><strong>混合要求：</strong>快速混合(Gt>10000)</p>
+                                </div>
+                            </div>
+                        `,
+                        summary: '学会了如何将工艺参数转化为设备设计需求'
+                    },
+                    {
+                        title: '反应器选型',
+                        content: `
+                            <h3>🏗️ 反应器选型工具</h3>
+                            <div class="input-group">
+                                <label>选择反应器类型</label>
+                                <select id="reactorType" onchange="selectReactor()">
+                                    <option value="">-- 请选择 --</option>
+                                    <option value="complete">完全混合反应器(CSTR)</option>
+                                    <option value="plug">推流式反应器(PFR)</option>
+                                    <option value="series">多级串联反应器</option>
+                                </select>
+                            </div>
+                            
+                            <div id="reactorInfo" style="display: none; margin-top: 20px;">
+                                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                                    <h4 id="reactorName" style="color: #1976d2; margin-bottom: 10px;"></h4>
+                                    <p id="reactorDesc" style="color: #666; line-height: 1.8;"></p>
+                                </div>
+
+                                <div class="result-panel">
+                                    <h4>📊 设计参数</h4>
+                                    <div class="result-item">
+                                        <span class="result-label">反应器容积</span>
+                                        <span class="result-value" id="reactorVolume">--</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">停留时间</span>
+                                        <span class="result-value">45 min</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">适用规模</span>
+                                        <span class="result-value" id="applicableScale">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                        summary: '掌握了不同类型反应器的选型原则'
+                    },
+                    {
+                        title: '搅拌系统设计',
+                        content: `
+                            <h3>🔄 搅拌系统配置</h3>
+                            <div class="slider-group">
+                                <label>搅拌器功率 (kW)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="mixerPower" min="5" max="50" value="15" oninput="calculateMixing()">
+                                    <span class="slider-value" id="mixerPowerValue">15 kW</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-top: 20px;">
+                                <label>搅拌器类型</label>
+                                <select id="mixerType" onchange="calculateMixing()">
+                                    <option value="propeller">推进式</option>
+                                    <option value="paddle">桨叶式</option>
+                                    <option value="turbine">涡轮式</option>
+                                </select>
+                            </div>
+
+                            <div class="result-panel">
+                                <h4>📊 混合效果评估</h4>
+                                <div class="result-item">
+                                    <span class="result-label">G值(速度梯度)</span>
+                                    <span class="result-value" id="gValue">--</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">混合强度</span>
+                                    <span class="result-value" id="mixingIntensity">--</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">能耗评价</span>
+                                    <span class="result-value" id="energyRating">--</span>
+                                </div>
+                            </div>
+                        `,
+                        summary: '学会了搅拌系统的设计和混合效果评估'
+                    }
+                ]
+            },
+            analyst: {
+                name: '环境数据分析师',
+                icon: '📊',
+                tasks: [
+                    {
+                        title: '数据收集方案',
+                        content: `
+                            <h3>📡 水质监测方案设计</h3>
+                            <div class="hint-box">
+                                <p>数据是决策的基础，建立科学的监测方案至关重要。</p>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <h4>监测点位规划</h4>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                    <p>📍 <strong>进水口：</strong>COD、pH、温度、流量</p>
+                                    <p>📍 <strong>反应池中段：</strong>pH、ORP、Fe²⁺浓度</p>
+                                    <p>📍 <strong>出水口：</strong>COD、色度、pH、SS</p>
+                                </div>
+                            </div>
+                        `,
+                        summary: '掌握了水质监测方案的设计方法'
+                    },
+                    {
+                        title: '数据分析实践',
+                        content: `
+                            <h3>📈 数据分析工具</h3>
+                            <p style="color: #666; margin-bottom: 20px;">分析以下运行数据，评估处理效果</p>
+
+                            <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                                <h4>📋 监测数据样本</h4>
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                                    <tr style="background: #ffcc80;">
+                                        <th style="padding: 10px; text-align: left;">时间</th>
+                                        <th style="padding: 10px; text-align: left;">进水COD</th>
+                                        <th style="padding: 10px; text-align: left;">出水COD</th>
+                                        <th style="padding: 10px; text-align: left;">去除率</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">08:00</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">850</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">210</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">75.3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">10:00</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">920</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">195</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">78.8%</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">12:00</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">780</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">185</td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #ffe0b2;">76.3%</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="result-panel">
+                                <h4>📊 数据分析结果</h4>
+                                <div class="result-item">
+                                    <span class="result-label">平均去除率</span>
+                                    <span class="result-value">76.8%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">达标率</span>
+                                    <span class="result-value">100%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">运行稳定性</span>
+                                    <span class="result-value">良好</span>
+                                </div>
+                            </div>
+                        `,
+                        summary: '学会了水质数据的采集、处理和分析方法'
+                    },
+                    {
+                        title: '效果评估报告',
+                        content: `
+                            <h3>📝 评估报告生成</h3>
+                            <div class="result-panel" style="margin-top: 20px;">
+                                <h4>🎯 处理效果综合评估</h4>
+                                <div style="margin-top: 15px;">
+                                    <p><strong>1. 处理效率评估：</strong></p>
+                                    <p style="color: #666; margin: 10px 0; padding-left: 20px;">COD平均去除率76.8%，达到设计预期，系统运行稳定</p>
+                                    
+                                    <p><strong>2. 达标情况：</strong></p>
+                                    <p style="color: #666; margin: 10px 0; padding-left: 20px;">出水COD全部优于排放标准(≤300mg/L)，达标率100%</p>
+                                    
+                                    <p><strong>3. 优化建议：</strong></p>
+                                    <p style="color: #666; margin: 10px 0; padding-left: 20px;">建议在进水负荷较高时适当增加H₂O₂投加量，以保证处理效果</p>
+                                </div>
+                            </div>
+                        `,
+                        summary: '掌握了效果评估报告的撰写方法'
+                    }
+                ]
+            },
+            expert: {
+                name: '资源化策略专家',
+                icon: '♻️',
+                tasks: [
+                    {
+                        title: '污泥特性分析',
+                        content: `
+                            <h3>🧪 污泥成分与特性</h3>
+                            <div class="hint-box">
+                                <p>了解污泥特性是制定资源化方案的前提。</p>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <h4>污泥组成分析</h4>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                    <p>🔬 <strong>铁含量：</strong>35-45% (主要成分Fe(OH)₃)</p>
+                                    <p>🔬 <strong>有机物含量：</strong>15-25%</p>
+                                    <p>🔬 <strong>含水率：</strong>75-85%</p>
+                                    <p>🔬 <strong>重金属含量：</strong>符合农用标准</p>
+                                </div>
+                            </div>
+                        `,
+                        summary: '掌握了芬顿污泥的特性和组成分析方法'
+                    },
+                    {
+                        title: '处置方案对比',
+                        content: `
+                            <h3>🔄 处置方案对比分析</h3>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                                <tr style="background: #667eea; color: white;">
+                                    <th style="padding: 12px; text-align: left;">方案</th>
+                                    <th style="padding: 12px; text-align: left;">成本</th>
+                                    <th style="padding: 12px; text-align: left;">环保性</th>
+                                    <th style="padding: 12px; text-align: left;">资源化价值</th>
+                                </tr>
+                                <tr style="background: #f8f9fa;">
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">填埋</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">低</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">差</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">无</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">焚烧</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">高</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">中</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">能源回收</td>
+                                </tr>
+                                <tr style="background: #f8f9fa;">
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">建材利用</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">中</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">好</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">制砖、水泥</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px;">土地利用</td>
+                                    <td style="padding: 12px;">低</td>
+                                    <td style="padding: 12px;">好</td>
+                                    <td style="padding: 12px;">土壤改良</td>
+                                </tr>
+                            </table>
+                        `,
+                        summary: '掌握了不同污泥处置方案的对比分析方法'
+                    },
+                    {
+                        title: '资源化路径设计',
+                        content: `
+                            <h3>♻️ 资源化路径优化</h3>
+                            <div class="slider-group">
+                                <label>建材利用比例 (%)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="resourceRate" min="0" max="100" value="60" oninput="calculateResource()">
+                                    <span class="slider-value" id="resourceRateValue">60%</span>
+                                </div>
+                            </div>
+
+                            <div class="result-panel">
+                                <h4>📊 资源化效益</h4>
+                                <div class="result-item">
+                                    <span class="result-label">资源化利用率</span>
+                                    <span class="result-value" id="utilizationRate">60%</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">年减少填埋量</span>
+                                    <span class="result-value" id="reducedLandfill">180 吨</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">年经济效益</span>
+                                    <span class="result-value" id="economicBenefit">¥15.6万元</span>
+                                </div>
+                            </div>
+
+                            <div class="hint-box" style="margin-top: 20px;">
+                                <p><strong>💡 可持续发展：</strong>提高资源化利用率不仅降低处置成本，还能减少环境影响，实现循环经济</p>
+                            </div>
+                        `,
+                        summary: '学会了资源化路径的设计和效益评估'
+                    }
+                ]
+            }
+        };
+
+        // 选择角色
+        function selectRole(role) {
+            currentRole = role;
+            currentTaskIndex = 0;
+            showPage('taskPage');
+            loadTask();
+        }
+
+        // 显示页面
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // 加载任务
+        function loadTask() {
+            const config = roleConfig[currentRole];
+            const task = config.tasks[currentTaskIndex];
+
+            // 更新标题
+            document.getElementById('roleTitle').textContent = config.name;
+            document.getElementById('taskSubtitle').textContent = `任务 ${currentTaskIndex + 1}/${task.length}：${task.title}`;
+            
+            // 更新进度
+            const progress = ((currentTaskIndex + 1) / task.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+
+            // 更新任务清单
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = config.tasks.map((t, index) => `
+                <li style="color: ${index <= currentTaskIndex ? '#667eea' : '#999'}; ${index <= currentTaskIndex ? 'border-left-color: #667eea;' : ''}">
+                    ${index <= currentTaskIndex ? '✓' : '○'} ${t.title}
+                </li>
+            `).join('');
+
+            // 更新工作区内容
+            document.getElementById('workspace').innerHTML = task.content;
+
+            // 更新按钮状态
+            document.getElementById('nextBtn').textContent = 
+                currentTaskIndex === task.length - 1 ? '完成任务' : '下一步 →';
+
+            // 初始化任务特定的交互
+            if (currentRole === 'engineer' && currentTaskIndex === 1) {
+                calculateFenton();
+            }
+        }
+
+        // 下一步
+        function nextTask() {
+            const config = roleConfig[currentRole];
+            if (currentTaskIndex < config.tasks.length - 1) {
+                currentTaskIndex++;
+                loadTask();
+            } else {
+                // 完成所有任务
+                showSuccessPage();
+            }
+        }
+
+        // 返回
+        function goBack() {
+            showPage('roleSelectionPage');
+            currentRole = null;
+            currentTaskIndex = 0;
+        }
+
+        // 显示成功页面
+        function showSuccessPage() {
+            showPage('successPage');
+            const config = roleConfig[currentRole];
+            document.getElementById('completedRole').textContent = config.name;
+
+            // 生成总结内容
+            const summaryHtml = config.tasks.map(task => `
+                <div class="summary-item">
+                    <span class="result-label">${task.title.split('：')[0]}</span>
+                    <span class="result-value">✓</span>
+                </div>
+                <div style="color: #666; font-size: 0.9rem; padding-left: 20px; margin-bottom: 15px;">
+                    ${task.summary}
+                </div>
+            `).join('');
+
+            document.getElementById('summaryContent').innerHTML = summaryHtml;
+        }
+
+        // 工艺计算工程师的交互函数
+        function calculateFenton() {
+            const cod = parseInt(document.getElementById('codInput').value);
+            const h2o2 = parseInt(document.getElementById('h2o2Input').value);
+            const fe2 = parseInt(document.getElementById('fe2Input').value);
+            const time = parseInt(document.getElementById('timeInput').value);
+
+            // 更新显示值
+            document.getElementById('codValue').textContent = cod + ' mg/L';
+            document.getElementById('h2o2Value').textContent = h2o2 + ' mg/L';
+            document.getElementById('fe2Value').textContent = fe2 + ' mg/L';
+            document.getElementById('timeValue').textContent = time + ' min';
+
+            // 计算去除率 (简化模型)
+            const removalRate = Math.min(95, 60 + (h2o2 / cod) * 30 + (fe2 / h2o2) * 5 + (time / 60) * 5);
+            const effluentCod = Math.round(cod * (1 - removalRate / 100));
+            const cost = (h2o2 * 0.006 + fe2 * 0.008).toFixed(2);
+            const ratio = (h2o2 / fe2).toFixed(2);
+
+            document.getElementById('removalRate').textContent = removalRate.toFixed(1) + '%';
+            document.getElementById('effluentCod').textContent = effluentCod + ' mg/L';
+            document.getElementById('chemicalCost').textContent = '¥' + cost + '/m³';
+            document.getElementById('dosageRatio').textContent = ratio + ':1';
+        }
+
+        // 设备结构设计师的交互函数
+        function selectReactor() {
+            const type = document.getElementById('reactorType').value;
+            const infoDiv = document.getElementById('reactorInfo');
+
+            if (!type) {
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            infoDiv.style.display = 'block';
+
+            const reactorData = {
+                complete: {
+                    name: '完全混合反应器 (CSTR)',
+                    desc: '混合均匀，操作简单，适用于连续流处理。但对浓度变化敏感，反应效率相对较低。',
+                    volume: '31.25 m³',
+                    scale: '中小型处理厂'
+                },
+                plug: {
+                    name: '推流式反应器 (PFR)',
+                    desc: '浓度梯度推动反应，效率高，适用于大型处理厂。但混合效果相对较差。',
+                    volume: '31.25 m³',
+                    scale: '大型处理厂'
+                },
+                series: {
+                    name: '多级串联反应器',
+                    desc: '结合CSTR和PFR优点，反应效率高，运行灵活。但投资成本较高。',
+                    volume: '31.25 m³ (分3级)',
+                    scale: '各种规模'
+                }
+            };
+
+            const data = reactorData[type];
+            document.getElementById('reactorName').textContent = data.name;
+            document.getElementById('reactorDesc').textContent = data.desc;
+            document.getElementById('reactorVolume').textContent = data.volume;
+            document.getElementById('applicableScale').textContent = data.scale;
+        }
+
+        function calculateMixing() {
+            const power = parseInt(document.getElementById('mixerPower').value);
+            const type = document.getElementById('mixerType').value;
+            
+            document.getElementById('mixerPowerValue').textContent = power + ' kW';
+
+            // 简化计算
+            const gValues = {
+                propeller: 450,
+                paddle: 380,
+                turbine: 520
+            };
+
+            const gValue = Math.round(gValues[type] * (power / 15));
+            const intensity = gValue > 500 ? '强' : (gValue > 400 ? '中' : '弱');
+            const rating = power > 30 ? '偏高' : (power < 10 ? '偏低' : '合理');
+
+            document.getElementById('gValue').textContent = gValue + ' s⁻¹';
+            document.getElementById('mixingIntensity').textContent = intensity;
+            document.getElementById('energyRating').textContent = rating;
+        }
+
+        // 资源化策略专家的交互函数
+        function calculateResource() {
+            const rate = parseInt(document.getElementById('resourceRate').value);
+            document.getElementById('resourceRateValue').textContent = rate + '%';
+
+            const reducedLandfill = Math.round(300 * (rate / 100));
+            const benefit = (reducedLandfill * 0.0867).toFixed(1);
+
+            document.getElementById('utilizationRate').textContent = rate + '%';
+            document.getElementById('reducedLandfill').textContent = reducedLandfill + ' 吨';
+            document.getElementById('economicBenefit').textContent = '¥' + benefit + '万元';
+        }
+    </script>
+</body>
+</html>
