@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AOP 词汇通关手册 | 高级氧化技术</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 头部 */
+        .header {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-light);
+            font-size: 1.1em;
+        }
+
+        /* 进度条 */
+        .progress-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .progress-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .progress-bar-container {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .level-progress {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .level-card.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .level-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .level-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .level-count {
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* 词汇卡片 */
+        .vocab-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .vocab-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .vocab-card {
+            background: var(--bg);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .vocab-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .vocab-card.mastered {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid var(--secondary);
+        }
+
+        .vocab-english {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .vocab-chinese {
+            color: var(--text-light);
+            font-size: 1em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .vocab-card.show-chinese .vocab-chinese {
+            opacity: 1;
+        }
+
+        .vocab-card.show-chinese .vocab-english {
+            opacity: 0.3;
+        }
+
+        .mastered-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--secondary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            display: none;
+        }
+
+        .vocab-card.mastered .mastered-badge {
+            display: block;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* 自测模式 */
+        .quiz-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .quiz-section.active {
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: var(--bg);
+            border-radius: 15px;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .quiz-option {
+            padding: 20px;
+            background: var(--bg);
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .quiz-option.correct {
+            background: #d1fae5;
+            border-color: var(--secondary);
+        }
+
+        .quiz-option.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+        }
+
+        /* 最终挑战 */
+        .challenge-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .challenge-section.active {
+            display: block;
+        }
+
+        .challenge-text {
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .challenge-text .highlight {
+            background: #fef3c7;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: var(--warning);
+        }
+
+        .challenge-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .challenge-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 统计 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .vocab-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* 导航 */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header fade-in">
+            <h1>🎓 AOP 词汇通关手册</h1>
+            <p>Advanced Oxidation Processes | 高级氧化技术学术英语</p>
+        </div>
+
+        <!-- 进度区域 -->
+        <div class="progress-section fade-in">
+            <div class="progress-title">📊 学习进度</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="totalProgress">0%</div>
+            </div>
+            <div class="level-progress">
+                <div class="level-card" onclick="showLevel(1)" id="level1">
+                    <div class="level-icon">🧱</div>
+                    <div class="level-name">Level 1 基础基石</div>
+                    <div class="level-count" id="level1Count">0/50</div>
+                </div>
+                <div class="level-card" onclick="showLevel(2)" id="level2">
+                    <div class="level-icon">⚡</div>
+                    <div class="level-name">Level 2 核心机理</div>
+                    <div class="level-count" id="level2Count">0/50</div>
+                </div>
+                <div class="level-card" onclick="showLevel(3)" id="level3">
+                    <div class="level-icon">🏭</div>
+                    <div class="level-name">Level 3 工艺技术</div>
+                    <div class="level-count" id="level3Count">0/50</div>
+                </div>
+                <div class="level-card" onclick="showLevel(4)" id="level4">
+                    <div class="level-icon">🔬</div>
+                    <div class="level-name">Level 4 材料表征</div>
+                    <div class="level-count" id="level4Count">0/50</div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="masteredCount">0</div>
+                    <div class="stat-label">已掌握词汇</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="quizScore">0</div>
+                    <div class="stat-label">测验得分</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="studyDays">1</div>
+                    <div class="stat-label">学习天数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="nav-tabs fade-in">
+            <button class="nav-tab active" onclick="showSection('vocab')">📚 词汇学习</button>
+            <button class="nav-tab" onclick="showSection('quiz')">🎯 自测模式</button>
+            <button class="nav-tab" onclick="showSection('challenge')">🏆 最终挑战</button>
+        </div>
+
+        <!-- 词汇学习区域 -->
+        <div class="vocab-section active" id="vocabSection">
+            <div class="controls">
+                <button class="btn btn-primary" onclick="toggleAllChinese()">👁️ 显示/隐藏中文</button>
+                <button class="btn btn-secondary" onclick="resetLevel()">🔄 重置本关</button>
+                <button class="btn btn-warning" onclick="exportProgress()">💾 导出进度</button>
+                <button class="btn btn-danger" onclick="clearAllProgress()">🗑️ 清除所有进度</button>
+            </div>
+            <div class="section-title" id="vocabTitle">
+                🧱 Level 1: 基础基石 (1-50)
+            </div>
+            <div class="vocab-grid" id="vocabGrid"></div>
+        </div>
+
+        <!-- 自测区域 -->
+        <div class="quiz-section" id="quizSection">
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startQuiz()">🎲 开始新测验</button>
+                <button class="btn btn-secondary" onclick="skipQuestion()">⏭️ 跳过</button>
+            </div>
+            <div class="section-title">🎯 词汇自测</div>
+            <div class="quiz-question" id="quizQuestion">
+                点击"开始新测验"开始答题
+            </div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="quizCurrent">0</div>
+                    <div class="stat-label">当前题号</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="quizCorrect">0</div>
+                    <div class="stat-label">正确数量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="quizAccuracy">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最终挑战区域 -->
+        <div class="challenge-section" id="challengeSection">
+            <div class="section-title">🏆 最终 Boss 挑战</div>
+            <p style="margin-bottom: 20px; color: var(--text-light);">
+                尝试翻译以下 AOP 论文摘要，检验您的学习成果！
+            </p>
+            <div class="challenge-text">
+                <strong>Abstract:</strong><br><br>
+                "In this study, a novel <span class="highlight">heterogeneous</span> 
+                <span class="highlight">photocatalyst</span> was <span class="highlight">synthesized</span> 
+                to <span class="highlight">degrade</span> <span class="highlight">antibiotics</span> 
+                in <span class="highlight">wastewater</span>. The <span class="highlight">mechanism</span> 
+                involves the generation of <span class="highlight">hydroxyl radicals</span> 
+                under <span class="highlight">UV irradiation</span>. Results showed a high 
+                <span class="highlight">removal efficiency</span> and excellent 
+                <span class="highlight">stability</span> without metal 
+                <span class="highlight">leaching</span>."
+            </div>
+            <textarea class="challenge-input" id="challengeInput" 
+                placeholder="在此输入您的翻译..."></textarea>
+            <button class="btn btn-primary" onclick="submitChallenge()">✅ 提交答案</button>
+            <div id="challengeFeedback" style="margin-top: 20px; padding: 20px; 
+                background: var(--bg); border-radius: 10px; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 词汇数据
+        const vocabData = {
+            1: [
+                {en: "Atom", cn: "原子"}, {en: "Molecule", cn: "分子"},
+                {en: "Ion", cn: "离子"}, {en: "Electron", cn: "电子"},
+                {en: "Proton", cn: "质子"}, {en: "Neutron", cn: "中子"},
+                {en: "Isotope", cn: "同位素"}, {en: "Chemical Bond", cn: "化学键"},
+                {en: "Covalent Bond", cn: "共价键"}, {en: "Ionic Bond", cn: "离子键"},
+                {en: "Hydrogen Bond", cn: "氢键"}, {en: "Polarity", cn: "极性"},
+                {en: "Solubility", cn: "溶解度"}, {en: "Concentration", cn: "浓度"},
+                {en: "Molarity", cn: "摩尔浓度"}, {en: "pH Value", cn: "pH 值"},
+                {en: "Acid", cn: "酸"}, {en: "Base", cn: "碱"},
+                {en: "Energy", cn: "能量"}, {en: "Entropy", cn: "熵"},
+                {en: "Enthalpy", cn: "焓"}, {en: "Activation Energy", cn: "活化能"},
+                {en: "Catalyst", cn: "催化剂"}, {en: "Inhibitor", cn: "抑制剂"},
+                {en: "Equilibrium", cn: "平衡"}, {en: "Kinetics", cn: "动力学"},
+                {en: "Thermodynamics", cn: "热力学"}, {en: "Electrochemistry", cn: "电化学"},
+                {en: "Photon", cn: "光子"}, {en: "Wavelength", cn: "波长"},
+                {en: "Frequency", cn: "频率"}, {en: "Spectrum", cn: "光谱"},
+                {en: "Ultraviolet (UV)", cn: "紫外线"}, {en: "Visible Light", cn: "可见光"},
+                {en: "Infrared", cn: "红外线"}, {en: "Luminescence", cn: "发光"},
+                {en: "Fluorescence", cn: "荧光"}, {en: "Wastewater", cn: "废水"},
+                {en: "Effluent", cn: "出水"}, {en: "Influent", cn: "进水"},
+                {en: "Sludge", cn: "污泥"}, {en: "Turbidity", cn: "浊度"},
+                {en: "Conductivity", cn: "电导率"}, {en: "Salinity", cn: "盐度"},
+                {en: "Hardness", cn: "硬度"}, {en: "Alkalinity", cn: "碱度"},
+                {en: "COD", cn: "化学需氧量"}, {en: "BOD", cn: "生化需氧量"},
+                {en: "TOC", cn: "总有机碳"}, {en: "Toxicity", cn: "毒性"}
+            ],
+            2: [
+                {en: "Radical", cn: "自由基"}, {en: "Hydroxyl Radical (•OH)", cn: "羟基自由基"},
+                {en: "Superoxide Radical", cn: "超氧自由基"}, {en: "Singlet Oxygen", cn: "单线态氧"},
+                {en: "Ozone (O₃)", cn: "臭氧"}, {en: "Hydrogen Peroxide", cn: "过氧化氢"},
+                {en: "Persulfate (PS)", cn: "过硫酸盐"}, {en: "Sulfate Radical", cn: "硫酸根自由基"},
+                {en: "Hole (h⁺)", cn: "空穴"}, {en: "Redox Reaction", cn: "氧化还原反应"},
+                {en: "Oxidation", cn: "氧化"}, {en: "Reduction", cn: "还原"},
+                {en: "Redox Potential", cn: "氧化还原电位"}, {en: "Voltage", cn: "电压"},
+                {en: "Current", cn: "电流"}, {en: "Chloride", cn: "氯离子"},
+                {en: "Sulfate", cn: "硫酸根"}, {en: "Nitrate", cn: "硝酸根"},
+                {en: "Bicarbonate", cn: "碳酸氢根"}, {en: "Carbonate", cn: "碳酸根"},
+                {en: "Phosphate", cn: "磷酸根"}, {en: "Heavy Metal", cn: "重金属"},
+                {en: "Iron (Fe)", cn: "铁"}, {en: "Copper (Cu)", cn: "铜"},
+                {en: "Scavenger", cn: "清除剂"}, {en: "Quencher", cn: "猝灭剂"},
+                {en: "Promoter", cn: "促进剂"}, {en: "Degradation", cn: "降解"},
+                {en: "Mineralization", cn: "矿化"}, {en: "Detoxification", cn: "解毒"},
+                {en: "Intermediate", cn: "中间产物"}, {en: "Byproduct", cn: "副产物"},
+                {en: "Pathway", cn: "路径"}, {en: "Mechanism", cn: "机理"},
+                {en: "Chain Reaction", cn: "链式反应"}, {en: "Initiation", cn: "引发"},
+                {en: "Propagation", cn: "传递"}, {en: "Termination", cn: "终止"},
+                {en: "Synergistic Effect", cn: "协同效应"}, {en: "Antagonistic Effect", cn: "拮抗效应"},
+                {en: "Inhibition", cn: "抑制"}, {en: "Acceleration", cn: "加速"},
+                {en: "Removal Efficiency", cn: "去除效率"}, {en: "Quantum Yield", cn: "量子产率"},
+                {en: "Selectivity", cn: "选择性"}, {en: "Stability", cn: "稳定性"},
+                {en: "Reusability", cn: "可重复使用性"}, {en: "Leaching", cn: "浸出"},
+                {en: "Corrosion", cn: "腐蚀"}, {en: "Fouling", cn: "结垢"}
+            ],
+            3: [
+                {en: "AOPs", cn: "高级氧化技术"}, {en: "Ozonation", cn: "臭氧氧化"},
+                {en: "Photolysis", cn: "光解"}, {en: "Photocatalysis", cn: "光催化"},
+                {en: "Fenton Process", cn: "芬顿工艺"}, {en: "Photo-Fenton", cn: "光芬顿"},
+                {en: "Electro-Fenton", cn: "电芬顿"}, {en: "Sonolysis", cn: "声解"},
+                {en: "Sonochemistry", cn: "声化学"}, {en: "Cavitation", cn: "空化"},
+                {en: "Plasma Technology", cn: "等离子体技术"}, {en: "Electro-oxidation", cn: "电氧化"},
+                {en: "Wet Air Oxidation", cn: "湿式空气氧化"}, {en: "SCWO", cn: "超临界水氧化"},
+                {en: "Persulfate Activation", cn: "过硫酸盐活化"}, {en: "UV/H₂O₂ Process", cn: "紫外/过氧化氢"},
+                {en: "UV/O₃ Process", cn: "紫外/臭氧"}, {en: "Heterogeneous", cn: "非均相"},
+                {en: "Homogeneous", cn: "均相"}, {en: "Anodic Oxidation", cn: "阳极氧化"},
+                {en: "Cathodic Reduction", cn: "阴极还原"}, {en: "Membrane Filtration", cn: "膜过滤"},
+                {en: "Hybrid Process", cn: "耦合工艺"}, {en: "Pre-treatment", cn: "预处理"},
+                {en: "Post-treatment", cn: "后处理"}, {en: "Polishing", cn: "深度处理"},
+                {en: "Biological Treatment", cn: "生物处理"}, {en: "Physical Treatment", cn: "物理处理"},
+                {en: "Chemical Treatment", cn: "化学处理"}, {en: "Natural Sunlight", cn: "自然阳光"},
+                {en: "Pesticide", cn: "农药"}, {en: "Herbicide", cn: "除草剂"},
+                {en: "Pharmaceutical", cn: "药品"}, {en: "Antibiotic", cn: "抗生素"},
+                {en: "Hormone", cn: "激素"}, {en: "Dye", cn: "染料"},
+                {en: "Surfactant", cn: "表面活性剂"}, {en: "Solvent", cn: "溶剂"},
+                {en: "Hydrocarbon", cn: "碳氢化合物"}, {en: "Aromatic Compound", cn: "芳香族化合物"},
+                {en: "Aliphatic Compound", cn: "脂肪族化合物"}, {en: "Halogenated Organics", cn: "卤代有机物"},
+                {en: "Chlorinated Organics", cn: "氯化有机物"}, {en: "POPs", cn: "持久性有机污染物"},
+                {en: "Bioaccumulative", cn: "生物累积性"}, {en: "Carcinogenic", cn: "致癌的"},
+                {en: "Mutagenic", cn: "致突变"}, {en: "Teratogenic", cn: "致畸"}
+            ],
+            4: [
+                {en: "TiO₂", cn: "二氧化钛"}, {en: "ZnO", cn: "氧化锌"},
+                {en: "Graphene", cn: "石墨烯"}, {en: "CNT", cn: "碳纳米管"},
+                {en: "Activated Carbon", cn: "活性炭"}, {en: "Zeolite", cn: "沸石"},
+                {en: "Perovskite", cn: "钙钛矿"}, {en: "Doping", cn: "掺杂"},
+                {en: "Composite Material", cn: "复合材料"}, {en: "Nanoparticle", cn: "纳米颗粒"},
+                {en: "Specific Surface Area", cn: "比表面积"}, {en: "Pore Size Distribution", cn: "孔径分布"},
+                {en: "Morphology", cn: "形貌"}, {en: "Crystallinity", cn: "结晶度"},
+                {en: "Band Gap", cn: "带隙"}, {en: "Valence Band", cn: "价带"},
+                {en: "Conduction Band", cn: "导带"}, {en: "Fermi Level", cn: "费米能级"},
+                {en: "XRD", cn: "X 射线衍射"}, {en: "SEM", cn: "扫描电子显微镜"},
+                {en: "Adsorption", cn: "吸附"}, {en: "Desorption", cn: "脱附"},
+                {en: "Recycle", cn: "循环"}, {en: "Calcination", cn: "煅烧"},
+                {en: "Precursor", cn: "前驱体"}, {en: "Synthesis", cn: "合成"},
+                {en: "Characterization", cn: "表征"}, {en: "Active Sites", cn: "活性位点"},
+                {en: "Standard Electrode Potential", cn: "标准电极电位"}, {en: "Current Density", cn: "电流密度"},
+                {en: "Disinfection Byproducts", cn: "消毒副产物"}, {en: "Ecotoxicity", cn: "生态毒性"},
+                {en: "Biodegradability", cn: "可生化性"}, {en: "Kinetic Constant", cn: "动力学常数"},
+                {en: "Half-life", cn: "半衰期"}, {en: "Stoichiometry", cn: "化学计量学"},
+                {en: "Nitrogenous Compounds", cn: "含氮化合物"}, {en: "Sulfur-containing", cn: "含硫化合物"},
+                {en: "Buffer Solution", cn: "缓冲溶液"}, {en: "Van der Waals Force", cn: "范德华力"},
+                {en: "Gibbs Free Energy", cn: "吉布斯自由能"}, {en: "Mass Transfer", cn: "传质"},
+                {en: "Reaction Rate", cn: "反应速率"}, {en: "Yield", cn: "产率"},
+                {en: "Conversion", cn: "转化率"}, {en: "Efficiency", cn: "效率"},
+                {en: "Optimization", cn: "优化"}, {en: "Scale-up", cn: "放大"}
+            ]
+        };
+
+        // 状态管理
+        let currentLevel = 1;
+        let masteredWords = JSON.parse(localStorage.getItem('aopMastered')) || {};
+        let quizStats = JSON.parse(localStorage.getItem('aopQuizStats')) || {score: 0, correct: 0, total: 0};
+        let currentQuiz = null;
+
+        // 初始化
+        function init() {
+            updateProgress();
+            showLevel(1);
+            loadStudyDays();
+        }
+
+        // 显示关卡
+        function showLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.level-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`level${level}`).classList.add('active');
+            
+            const titles = {
+                1: '🧱 Level 1: 基础基石 (1-50)',
+                2: '⚡ Level 2: 核心机理 (51-100)',
+                3: '🏭 Level 3: 工艺技术 (101-150)',
+                4: '🔬 Level 4: 材料表征 (151-200)'
+            };
+            document.getElementById('vocabTitle').textContent = titles[level];
+            
+            renderVocabGrid(level);
+        }
+
+        // 渲染词汇网格
+        function renderVocabGrid(level) {
+            const grid = document.getElementById('vocabGrid');
+            grid.innerHTML = '';
+            
+            vocabData[level].forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'vocab-card fade-in';
+                if (masteredWords[`${level}-${index}`]) {
+                    card.classList.add('mastered');
+                }
+                card.onclick = () => toggleWord(card, level, index);
+                
+                card.innerHTML = `
+                    <div class="mastered-badge">✅ 已掌握</div>
+                    <div class="vocab-english">${word.en}</div>
+                    <div class="vocab-chinese">${word.cn}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 切换单词显示
+        function toggleWord(card, level, index) {
+            card.classList.toggle('show-chinese');
+            const key = `${level}-${index}`;
+            if (!masteredWords[key]) {
+                masteredWords[key] = true;
+                card.classList.add('mastered');
+                saveProgress();
+                updateProgress();
+            }
+        }
+
+        // 切换所有中文显示
+        function toggleAllChinese() {
+            document.querySelectorAll('.vocab-card').forEach(card => {
+                card.classList.toggle('show-chinese');
+            });
+        }
+
+        // 更新进度
+        function updateProgress() {
+            let total = 0;
+            let mastered = 0;
+            
+            for (let level = 1; level <= 4; level++) {
+                const levelMastered = Object.keys(masteredWords).filter(k => k.startsWith(`${level}-`)).length;
+                total += 50;
+                mastered += levelMastered;
+                document.getElementById(`level${level}Count`).textContent = `${levelMastered}/50`;
+            }
+            
+            const percentage = Math.round((mastered / total) * 100);
+            document.getElementById('totalProgress').textContent = `${percentage}%`;
+            document.getElementById('totalProgress').style.width = `${percentage}%`;
+            document.getElementById('masteredCount').textContent = mastered;
+            document.getElementById('quizScore').textContent = quizStats.score;
+        }
+
+        // 保存进度
+        function saveProgress() {
+            localStorage.setItem('aopMastered', JSON.stringify(masteredWords));
+        }
+
+        // 重置关卡
+        function resetLevel() {
+            if (confirm('确定要重置本关进度吗？')) {
+                for (let i = 0; i < 50; i++) {
+                    delete masteredWords[`${currentLevel}-${i}`];
+                }
+                saveProgress();
+                renderVocabGrid(currentLevel);
+                updateProgress();
+            }
+        }
+
+        // 清除所有进度
+        function clearAllProgress() {
+            if (confirm('确定要清除所有学习进度吗？此操作不可恢复！')) {
+                masteredWords = {};
+                quizStats = {score: 0, correct: 0, total: 0};
+                localStorage.removeItem('aopMastered');
+                localStorage.removeItem('aopQuizStats');
+                saveProgress();
+                updateProgress();
+                renderVocabGrid(currentLevel);
+            }
+        }
+
+        // 导出进度
+        function exportProgress() {
+            const data = {
+                masteredWords,
+                quizStats,
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AOP 学习进度_${new Date().toLocaleDateString()}.json`;
+            a.click();
+        }
+
+        // 显示不同区域
+        function showSection(section) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.vocab-section, .quiz-section, .challenge-section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${section}Section`).classList.add('active');
+            
+            if (section === 'quiz') {
+                startQuiz();
+            }
+        }
+
+        // 开始测验
+        function startQuiz() {
+            const allWords = [];
+            for (let level = 1; level <= 4; level++) {
+                vocabData[level].forEach((word, index) => {
+                    allWords.push({...word, level, index});
+                });
+            }
+            
+            // 随机选择 10 个词
+            currentQuiz = {
+                words: allWords.sort(() => Math.random() - 0.5).slice(0, 10),
+                current: 0,
+                correct: 0
+            };
+            
+            document.getElementById('quizCurrent').textContent = '0';
+            document.getElementById('quizCorrect').textContent = '0';
+            document.getElementById('quizAccuracy').textContent = '0%';
+            
+            showQuizQuestion();
+        }
+
+        // 显示测验问题
+        function showQuizQuestion() {
+            if (currentQuiz.current >= currentQuiz.words.length) {
+                endQuiz();
+                return;
+            }
+            
+            const word = currentQuiz.words[currentQuiz.current];
+            document.getElementById('quizCurrent').textContent = currentQuiz.current + 1;
+            document.getElementById('quizQuestion').textContent = word.en;
+            
+            // 生成选项
+            const allWords = [];
+            for (let level = 1; level <= 4; level++) {
+                vocabData[level].forEach(w => allWords.push(w.cn));
+            }
+            
+            const options = [word.cn];
+            while (options.length < 4) {
+                const random = allWords[Math.floor(Math.random() * allWords.length)];
+                if (!options.includes(random)) {
+                    options.push(random);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            const optionsDiv = document.getElementById('quizOptions');
+            optionsDiv.innerHTML = '';
+            
+            options.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'quiz-option';
+                div.textContent = opt;
+                div.onclick = () => checkAnswer(div, opt, word.cn);
+                optionsDiv.appendChild(div);
+            });
+        }
+
+        // 检查答案
+        function checkAnswer(element, selected, correct) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            
+            if (selected === correct) {
+                element.classList.add('correct');
+                currentQuiz.correct++;
+                quizStats.correct++;
+                quizStats.score += 10;
+            } else {
+                element.classList.add('wrong');
+                options.forEach(opt => {
+                    if (opt.textContent === correct) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+            
+            quizStats.total++;
+            document.getElementById('quizCorrect').textContent = currentQuiz.correct;
+            document.getElementById('quizScore').textContent = quizStats.score;
+            
+            const accuracy = Math.round((quizStats.correct / quizStats.total) * 100);
+            document.getElementById('quizAccuracy').textContent = `${accuracy}%`;
+            
+            localStorage.setItem('aopQuizStats', JSON.stringify(quizStats));
+            
+            setTimeout(() => {
+                currentQuiz.current++;
+                showQuizQuestion();
+            }, 1500);
+        }
+
+        // 跳过问题
+        function skipQuestion() {
+            if (currentQuiz) {
+                currentQuiz.current++;
+                showQuizQuestion();
+            }
+        }
+
+        // 结束测验
+        function endQuiz() {
+            const accuracy = Math.round((currentQuiz.correct / currentQuiz.words.length) * 100);
+            document.getElementById('quizQuestion').innerHTML = `
+                🎉 测验完成！<br>
+                正确率：${accuracy}%<br>
+                得分：${currentQuiz.correct * 10} 分
+            `;
+            document.getElementById('quizOptions').innerHTML = '';
+        }
+
+        // 提交挑战
+        function submitChallenge() {
+            const input = document.getElementById('challengeInput').value;
+            const feedback = document.getElementById('challengeFeedback');
+            
+            if (input.length < 20) {
+                feedback.style.display = 'block';
+                feedback.innerHTML = '⚠️ 请至少输入 20 个字符的翻译内容';
+                feedback.style.background = '#fee2e2';
+                return;
+            }
+            
+            feedback.style.display = 'block';
+            feedback.innerHTML = `
+                <strong>✅ 提交成功！</strong><br><br>
+                <strong>参考译文：</strong><br>
+                "本研究合成了一种新型<strong>非均相光催化剂</strong>，用于<strong>降解</strong>
+                <strong>废水</strong>中的<strong>抗生素</strong>。其<strong>机理</strong>涉及在
+                <strong>紫外照射</strong>下产生<strong>羟基自由基</strong>。结果显示具有<strong>高去除效率</strong>
+                和优异的<strong>稳定性</strong>，且无金属<strong>浸出</strong>。"<br><br>
+                <strong>💡 提示：</strong>加粗词汇为本课程核心词汇，请确保理解准确！
+            `;
+            feedback.style.background = '#d1fae5';
+        }
+
+        // 加载学习天数
+        function loadStudyDays() {
+            const firstVisit = localStorage.getItem('aopFirstVisit');
+            if (!firstVisit) {
+                localStorage.setItem('aopFirstVisit', new Date().toISOString());
+            } else {
+                const first = new Date(firstVisit);
+                const now = new Date();
+                const days = Math.ceil((now - first) / (1000 * 60 * 60 * 24));
+                document.getElementById('studyDays').textContent = days;
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
