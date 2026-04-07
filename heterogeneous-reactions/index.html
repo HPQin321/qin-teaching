@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>非均相高级氧化反应机理 · 交互式教学</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --secondary: #34a853;
+    --accent: #ea4335;
+    --ozone-color: #8b5cf6;
+    --fenton-color: #f59e0b;
+    --surface: #0f172a;
+    --card-bg: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --oh-color: #ef4444;
+    --h2o2-color: #3b82f6;
+    --o3-color: #8b5cf6;
+    --fe-color: #f97316;
+    --active-glow: 0 0 15px rgba(239,68,68,0.6);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+
+  .tab-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 0 20px rgba(26,115,232,0.4);
+  }
+
+  .tab-btn:hover:not(.active) {
+    border-color: var(--primary);
+    color: var(--text);
+  }
+
+  /* Main Layout */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 40px;
+  }
+
+  .panel {
+    display: none;
+  }
+  .panel.active {
+    display: block;
+  }
+
+  /* Intro panel */
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+
+  .reaction-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reaction-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 16px;
+  }
+
+  .reaction-card.fenton::before {
+    background: radial-gradient(circle at top right, rgba(245,158,11,0.15), transparent 60%);
+  }
+
+  .reaction-card.ozone::before {
+    background: radial-gradient(circle at top right, rgba(139,92,246,0.15), transparent 60%);
+  }
+
+  .reaction-card:hover::before { opacity: 1; }
+
+  .reaction-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+
+  .card-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .fenton .card-tag { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .ozone .card-tag  { background: rgba(139,92,246,0.2); color: #a78bfa; }
+
+  .reaction-card h2 { font-size: 1.3rem; margin-bottom: 8px; }
+  .reaction-card p  { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
+
+  .key-species {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .species-badge {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .oh-badge   { background: rgba(239,68,68,0.15);  border-color: #ef4444; color: #fca5a5; }
+  .h2o2-badge { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #93c5fd; }
+  .o3-badge   { background: rgba(139,92,246,0.15); border-color: #8b5cf6; color: #c4b5fd; }
+  .fe-badge   { background: rgba(249,115,22,0.15); border-color: #f97316; color: #fdba74; }
+  .o2-badge   { background: rgba(52,168,83,0.15);  border-color: #34a853; color: #86efac; }
+
+  /* Comparison Table */
+  .comparison-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    margin-top: 24px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 18px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; color: var(--text-muted); font-weight: 500; }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* Mechanism Canvas Area */
+  .mechanism-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .step-list {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 90px;
+  }
+
+  .step-list h3 { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 16px; font-weight: 500; }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+  }
+
+  .step-item:hover { background: rgba(255,255,255,0.05); }
+  .step-item.active { background: rgba(26,115,232,0.15); border: 1px solid rgba(26,115,232,0.4); }
+
+  .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .step-item.active .step-num {
+    background: var(--primary);
+    box-shadow: 0 0 10px rgba(26,115,232,0.5);
+  }
+
+  .step-label { font-size: 0.85rem; line-height: 1.4; }
+
+  /* Animation Canvas */
+  .canvas-area {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .canvas-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .canvas-header h3 { font-size: 1rem; font-weight: 600; }
+
+  .canvas-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ctrl-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .ctrl-btn:hover { background: rgba(255,255,255,0.1); }
+  .ctrl-btn.primary-btn { background: var(--primary); border-color: var(--primary); }
+
+  canvas {
+    display: block;
+    width: 100%;
+    background: #0a0f1a;
+  }
+
+  /* Equation Display */
+  .equation-box {
+    padding: 20px 24px;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border);
+  }
+
+  .eq-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+
+  .equation {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    color: #60a5fa;
+    padding: 10px 16px;
+    background: rgba(26,115,232,0.1);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+    margin-bottom: 8px;
+  }
+
+  .eq-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* Info Cards below canvas */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .info-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .info-card h4 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+  .info-card p  { font-size: 0.9rem; }
+  .info-card .value { font-size: 1.1rem; font-weight: 700; color: #60a5fa; }
+
+  /* Species Legend */
+  .legend {
+    display: flex;
+    gap: 16px;
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Quiz Panel */
+  .quiz-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .quiz-intro {
+    text-align: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .quiz-intro h2 { font-size: 1.5rem; margin-bottom: 12px; }
+  .quiz-intro p  { color: var(--text-muted); }
+
+  .question-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .q-num { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+  .q-text { font-size: 1rem; font-weight: 500; margin-bottom: 20px; line-height: 1.6; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-btn {
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  .option-btn:hover:not(:disabled) { background: rgba(26,115,232,0.15); border-color: var(--primary); }
+  .option-btn.correct { background: rgba(52,168,83,0.2); border-color: #34a853; color: #86efac; }
+  .option-btn.wrong   { background: rgba(234,67,53,0.2);  border-color: #ea4335; color: #fca5a5; }
+
+  .explanation {
+    margin-top: 16px;
+    padding: 14px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    display: none;
+  }
+
+  .explanation.show { display: block; }
+
+  .quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--ozone-color));
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+
+  .score-display {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 40px;
+    border: 1px solid var(--border);
+    text-align: center;
+    display: none;
+  }
+
+  .score-display.show { display: block; }
+  .score-num { font-size: 4rem; font-weight: 700; color: #60a5fa; }
+  .score-label { font-size: 1rem; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* Comparison Panel */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .half-panel {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .half-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .fenton-header { background: rgba(245,158,11,0.1); }
+  .ozone-header  { background: rgba(139,92,246,0.1); }
+
+  .half-header h3 { font-size: 1rem; font-weight: 600; }
+
+  .half-content { padding: 20px; }
+
+  .mechanism-steps { display: flex; flex-direction: column; gap: 10px; }
+
+  .mech-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .mech-step:hover { background: rgba(255,255,255,0.04); }
+
+  .mech-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .fenton .mech-step-num { background: rgba(245,158,11,0.3); color: #fbbf24; }
+  .ozone  .mech-step-num { background: rgba(139,92,246,0.3); color: #a78bfa; }
+
+  .mech-step-content { font-size: 0.85rem; }
+  .mech-step-eq { font-family: 'Courier New', monospace; color: #93c5fd; margin-bottom: 4px; }
+  .mech-step-desc { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .mechanism-layout { grid-template-columns: 1fr; }
+    .intro-grid, .compare-grid { grid-template-columns: 1fr; }
+    .info-row { grid-template-columns: 1fr 1fr; }
+    header { flex-direction: column; gap: 12px; }
+    .container { padding: 20px; }
+  }
+
+  /* Floating particles */
+  .particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.4;
+    animation: float linear infinite;
+  }
+
+  @keyframes float {
+    0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.4; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+
+  .nav-arrow-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div id="particles"></div>
+
+<header>
+  <h1>⚗️ 非均相高级氧化反应机理 · 交互式教学平台</h1>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('intro')">🏠 概览</button>
+    <button class="tab-btn" onclick="switchTab('fenton')">🔥 非均相芬顿</button>
+    <button class="tab-btn" onclick="switchTab('ozone')">💜 非均相臭氧</button>
+    <button class="tab-btn" onclick="switchTab('compare')">⚖️ 对比</button>
+    <button class="tab-btn" onclick="switchTab('quiz')">🧪 知识测验</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- =================== 概览面板 =================== -->
+  <div class="panel active" id="panel-intro">
+    <div class="intro-grid">
+      <div class="reaction-card fenton" onclick="switchTab('fenton')">
+        <div class="card-icon">⚙️</div>
+        <div class="card-tag">非均相芬顿</div>
+        <h2>Heterogeneous Fenton</h2>
+        <p>以固态铁基催化剂（Fe₃O₄、铁矿石等）替代均相铁离子，H₂O₂在催化剂表面活化产生·OH，避免铁泥问题，拓宽 pH 适用范围。</p>
+        <div class="key-species">
+          <span class="species-badge fe-badge">Fe²⁺/Fe³⁺ (surface)</span>
+          <span class="species-badge h2o2-badge">H₂O₂</span>
+          <span class="species-badge oh-badge">·OH</span>
+          <span class="species-badge o2-badge">·O₂⁻</span>
+        </div>
+        <p style="margin-top:14px;font-size:0.8rem;color:#60a5fa">→ 点击查看详细机理动画</p>
+      </div>
+      <div class="reaction-card ozone" onclick="switchTab('ozone')">
+        <div class="card-icon">🌀</div>
+        <div class="card-tag">非均相催化臭氧</div>
+        <h2>Heterogeneous Catalytic Ozonation</h2>
+        <p>O₃在金属氧化物表面（MnO₂、Al₂O₃、TiO₂等）活化分解，生成·OH等活性物种，大幅提升臭氧利用率与有机物矿化效率。</p>
+        <div class="key-species">
+          <span class="species-badge o3-badge">O₃</span>
+          <span class="species-badge oh-badge">·OH</span>
+          <span class="species-badge o2-badge">·O₂⁻</span>
+          <span class="species-badge o3-badge">O·⁻</span>
+        </div>
+        <p style="margin-top:14px;font-size:0.8rem;color:#a78bfa">→ 点击查看详细机理动画</p>
+      </div>
+    </div>
+
+    <div class="comparison-section">
+      <div class="section-title">两种反应的核心共同点：表面反应主导机理</div>
+      <table>
+        <thead>
+          <tr>
+            <th>特征</th>
+            <th>非均相芬顿</th>
+            <th>非均相催化臭氧</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>核心氧化剂</td><td>H₂O₂</td><td>O₃</td></tr>
+          <tr><td>催化剂类型</td><td>铁基固体（Fe₃O₄、FeOOH等）</td><td>金属氧化物（MnO₂、Al₂O₃、TiO₂等）</td></tr>
+          <tr><td>主要活性物种</td><td>·OH（羟基自由基）</td><td>·OH 及 O·⁻</td></tr>
+          <tr><td>关键表面步骤</td><td>≡Fe²⁺ + H₂O₂ → ≡Fe³⁺ + ·OH + OH⁻</td><td>≡M-OH + O₃ → ≡M-O· + O₂ + ·OH</td></tr>
+          <tr><td>pH 适用范围</td><td>3 ~ 8（宽于均相）</td><td>4 ~ 10</td></tr>
+          <tr><td>铁/金属溶出</td><td>极少（固定在表面）</td><td>极少</td></tr>
+          <tr><td>处理目标</td><td>难降解有机物、染料、抗生素</td><td>微污染物、嗅味物质、消毒副产物前体</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =================== 非均相芬顿面板 =================== -->
+  <div class="panel" id="panel-fenton">
+    <div class="mechanism-layout">
+      <div class="step-list" id="fenton-steps">
+        <h3>反应步骤</h3>
+        <div class="step-item active" onclick="setFentonStep(0)" id="fs-0">
+          <div class="step-num">1</div>
+          <div class="step-label">H₂O₂ 吸附到催化剂表面</div>
+        </div>
+        <div class="step-item" onclick="setFentonStep(1)" id="fs-1">
+          <div class="step-num">2</div>
+          <div class="step-label">表面 Fe²⁺ 活化 H₂O₂ → ·OH 产生</div>
+        </div>
+        <div class="step-item" onclick="setFentonStep(2)" id="fs-2">
+          <div class="step-num">3</div>
+          <div class="step-label">·OH 攻击目标污染物</div>
+        </div>
+        <div class="step-item" onclick="setFentonStep(3)" id="fs-3">
+          <div class="step-num">4</div>
+          <div class="step-label">表面 Fe³⁺ 再生为 Fe²⁺</div>
+        </div>
+        <div class="step-item" onclick="setFentonStep(4)" id="fs-4">
+          <div class="step-num">5</div>
+          <div class="step-label">·O₂⁻ 辅助还原 Fe³⁺（超氧路径）</div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="ctrl-btn primary-btn" onclick="autoPlayFenton()" style="width:100%">▶ 自动演示</button>
+        </div>
+      </div>
+
+      <div class="canvas-area">
+        <div class="canvas-header">
+          <h3>🔥 非均相芬顿 — 表面反应动画</h3>
+          <div class="canvas-controls">
+            <button class="ctrl-btn" onclick="prevFentonStep()">← 上一步</button>
+            <button class="ctrl-btn" onclick="nextFentonStep()">下一步 →</button>
+          </div>
+        </div>
+        <canvas id="fentonCanvas" width="800" height="380"></canvas>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Fe²⁺ / Fe³⁺ (表面)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>H₂O₂</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>·OH（羟基自由基）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>·O₂⁻（超氧自由基）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>有机污染物</div>
+        </div>
+        <div class="equation-box" id="fenton-eq-box">
+          <div class="eq-title">当前步骤方程式</div>
+          <div class="equation" id="fenton-eq">≡Fe²⁺_surface + H₂O₂ → ≡Fe³⁺_surface + ·OH + OH⁻</div>
+          <div class="eq-desc" id="fenton-desc">H₂O₂ 通过内外扩散传质到达催化剂表面，被表面 Fe²⁺ 活化，生成高活性羟基自由基 ·OH。</div>
+        </div>
+        <div class="info-row">
+          <div class="info-card">
+            <h4>·OH 氧化电位</h4>
+            <div class="value">+2.80 V</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">vs. NHE，仅次于 F₂</p>
+          </div>
+          <div class="info-card">
+            <h4>表面活性位点</h4>
+            <div class="value">≡Fe²⁺</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">催化剂表面铁还原态位点</p>
+          </div>
+          <div class="info-card">
+            <h4>反应速率常数</h4>
+            <div class="value">~70 L·mol⁻¹s⁻¹</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">表面 Fenton 反应（298 K）</p>
+          </div>
+        </div>
+        <div class="nav-arrow-row">
+          <button class="ctrl-btn" onclick="prevFentonStep()">← 上一步</button>
+          <span style="color:var(--text-muted);font-size:0.85rem" id="fenton-step-label">步骤 1 / 5</span>
+          <button class="ctrl-btn" onclick="nextFentonStep()">下一步 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== 非均相臭氧面板 =================== -->
+  <div class="panel" id="panel-ozone">
+    <div class="mechanism-layout">
+      <div class="step-list" id="ozone-steps">
+        <h3>反应步骤</h3>
+        <div class="step-item active" onclick="setOzoneStep(0)" id="os-0">
+          <div class="step-num">1</div>
+          <div class="step-label">O₃ 向催化剂表面传质与吸附</div>
+        </div>
+        <div class="step-item" onclick="setOzoneStep(1)" id="os-1">
+          <div class="step-num">2</div>
+          <div class="step-label">表面羟基 ≡M-OH 与 O₃ 结合</div>
+        </div>
+        <div class="step-item" onclick="setOzoneStep(2)" id="os-2">
+          <div class="step-num">3</div>
+          <div class="step-label">表面臭氧化物分解产生 ·OH</div>
+        </div>
+        <div class="step-item" onclick="setOzoneStep(3)" id="os-3">
+          <div class="step-num">4</div>
+          <div class="step-label">·OH 与 ·O₂⁻ 链式反应扩增</div>
+        </div>
+        <div class="step-item" onclick="setOzoneStep(4)" id="os-4">
+          <div class="step-num">5</div>
+          <div class="step-label">表面位点再生与催化循环</div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="ctrl-btn primary-btn" onclick="autoPlayOzone()" style="width:100%;background:#7c3aed;border-color:#7c3aed">▶ 自动演示</button>
+        </div>
+      </div>
+
+      <div class="canvas-area">
+        <div class="canvas-header">
+          <h3>💜 非均相催化臭氧 — 表面反应动画</h3>
+          <div class="canvas-controls">
+            <button class="ctrl-btn" onclick="prevOzoneStep()">← 上一步</button>
+            <button class="ctrl-btn" onclick="nextOzoneStep()">下一步 →</button>
+          </div>
+        </div>
+        <canvas id="ozoneCanvas" width="800" height="380"></canvas>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>O₃（臭氧）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>≡M-OH（表面羟基）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>·OH（羟基自由基）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>·O₂⁻（超氧自由基）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>催化剂表面位点 ≡M</div>
+        </div>
+        <div class="equation-box" id="ozone-eq-box">
+          <div class="eq-title">当前步骤方程式</div>
+          <div class="equation" id="ozone-eq">O₃ + ≡M-OH → ≡M-OOO· + H⁺</div>
+          <div class="eq-desc" id="ozone-desc">O₃ 向催化剂表面扩散，与表面羟基 ≡M-OH 发生亲核/亲电反应，形成表面臭氧化物中间体。</div>
+        </div>
+        <div class="info-row">
+          <div class="info-card">
+            <h4>O₃ 氧化电位</h4>
+            <div class="value">+2.07 V</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">vs. NHE（直接氧化）</p>
+          </div>
+          <div class="info-card">
+            <h4>表面活性位点</h4>
+            <div class="value">≡M-OH</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">金属氧化物表面羟基</p>
+          </div>
+          <div class="info-card">
+            <h4>·OH 产率提升</h4>
+            <div class="value">3~10×</div>
+            <p style="font-size:0.78rem;color:var(--text-muted)">vs. 单独臭氧化</p>
+          </div>
+        </div>
+        <div class="nav-arrow-row">
+          <button class="ctrl-btn" onclick="prevOzoneStep()">← 上一步</button>
+          <span style="color:var(--text-muted);font-size:0.85rem" id="ozone-step-label">步骤 1 / 5</span>
+          <button class="ctrl-btn" onclick="nextOzoneStep()">下一步 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== 对比面板 =================== -->
+  <div class="panel" id="panel-compare">
+    <div class="compare-grid">
+      <div class="half-panel fenton">
+        <div class="half-header fenton-header">
+          <span style="font-size:1.5rem">⚙️</span>
+          <h3>非均相芬顿反应机理</h3>
+        </div>
+        <div class="half-content">
+          <div class="mechanism-steps fenton">
+            <div class="mech-step">
+              <div class="mech-step-num">1</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">H₂O₂ → 催化剂表面吸附</div>
+                <div class="mech-step-desc">H₂O₂ 经液相扩散到达催化剂表面，被表面活性位点捕获，形成表面络合物。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">2</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡Fe²⁺ + H₂O₂ → ≡Fe³⁺ + ·OH + OH⁻</div>
+                <div class="mech-step-desc">表面 Fe²⁺ 将 H₂O₂ 单电子还原，裂解 O-O 键，释放 ·OH（类均相芬顿反应）。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">3</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">·OH + 有机物(R) → CO₂ + H₂O</div>
+                <div class="mech-step-desc">·OH 以 10⁸~10¹⁰ M⁻¹s⁻¹ 速率攻击有机物，引发链式氧化降解直至矿化。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">4</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡Fe³⁺ + H₂O₂ → ≡Fe²⁺ + ·OOH + H⁺</div>
+                <div class="mech-step-desc">表面 Fe³⁺ 被 H₂O₂ 还原再生为 Fe²⁺，完成铁循环（速率限制步骤）。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">5</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡Fe³⁺ + ·O₂⁻ → ≡Fe²⁺ + O₂</div>
+                <div class="mech-step-desc">超氧自由基 ·O₂⁻ 也可参与还原 Fe³⁺，加速铁循环，提升 ·OH 产率。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="half-panel ozone">
+        <div class="half-header ozone-header">
+          <span style="font-size:1.5rem">🌀</span>
+          <h3>非均相催化臭氧机理</h3>
+        </div>
+        <div class="half-content">
+          <div class="mechanism-steps ozone">
+            <div class="mech-step">
+              <div class="mech-step-num">1</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">O₃ → 催化剂表面吸附</div>
+                <div class="mech-step-desc">气相/液相 O₃ 向催化剂表面扩散，被表面活性位点吸附，降低活化能。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">2</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡M-OH + O₃ → ≡M-OOO· + H⁺</div>
+                <div class="mech-step-desc">表面 Lewis 酸位点（≡M）或 Brønsted 羟基与 O₃ 反应，形成表面臭氧化物中间体。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">3</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡M-OOO· → ≡M-O· + O₂</div>
+                <div class="mech-step-desc">表面臭氧化物不稳定，分解产生表面活性氧 ≡M-O·，并释放 O₂。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">4</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">≡M-O· + H₂O → ≡M-OH + ·OH</div>
+                <div class="mech-step-desc">表面氧物种与水反应生成 ·OH，同时表面羟基再生（催化循环闭合）。</div>
+              </div>
+            </div>
+            <div class="mech-step">
+              <div class="mech-step-num">5</div>
+              <div class="mech-step-content">
+                <div class="mech-step-eq">·OH + O₃ → ·O₂⁻ + H⁺ + O₂ （链式）</div>
+                <div class="mech-step-desc">·OH 引发 O₃ 链式分解，产生更多 ·OH 和 ·O₂⁻，形成自加速氧化链。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-section">
+      <div class="section-title">两种机理的表面反应速率控制步骤对比</div>
+      <table>
+        <thead>
+          <tr><th>机理要素</th><th>非均相芬顿</th><th>非均相催化臭氧</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>速率限制步骤</td><td>≡Fe³⁺ → ≡Fe²⁺（Fe 循环）</td><td>O₃ 表面吸附/分解</td></tr>
+          <tr><td>表面中间体</td><td>≡Fe²⁺-H₂O₂ 络合物</td><td>≡M-OOO·（表面臭氧化物）</td></tr>
+          <tr><td>·OH 产生位置</td><td>催化剂表面及邻近液相</td><td>催化剂表面及液相（链式扩增）</td></tr>
+          <tr><td>抑制因子</td><td>•OH 清除剂（CO₃²⁻、Cl⁻）；高 pH 沉淀</td><td>•OH 清除剂；碱度消耗 O₃</td></tr>
+          <tr><td>增强策略</td><td>提升表面 Fe²⁺ 密度、光助（光芬顿）</td><td>增大比表面积、引入缺陷位点</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =================== 测验面板 =================== -->
+  <div class="panel" id="panel-quiz">
+    <div class="quiz-container">
+      <div class="quiz-intro">
+        <h2>🧪 知识测验</h2>
+        <p style="color:var(--text-muted);margin:8px 0 16px">检验你对非均相高级氧化反应机理的理解</p>
+        <button class="ctrl-btn primary-btn" onclick="startQuiz()" style="padding:10px 28px;font-size:0.95rem">开始测验</button>
+      </div>
+      <div id="quiz-area" style="display:none">
+        <div class="quiz-progress">
+          <span style="font-size:0.85rem;color:var(--text-muted)" id="q-count">问题 1 / 8</span>
+          <div class="progress-bar"><div class="progress-fill" id="q-progress" style="width:12%"></div></div>
+          <span style="font-size:0.85rem;color:var(--text-muted)" id="q-score-label">得分: 0</span>
+        </div>
+        <div id="question-area"></div>
+      </div>
+      <div class="score-display" id="score-display">
+        <div style="font-size:3rem;margin-bottom:12px">🎓</div>
+        <div class="score-num" id="final-score">0</div>
+        <div class="score-label" id="score-msg">/ 8 分</div>
+        <p style="color:var(--text-muted);margin:12px 0 24px" id="score-comment"></p>
+        <button class="ctrl-btn primary-btn" onclick="restartQuiz()" style="padding:10px 28px">重新测验</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===================== Particles =====================
+(function() {
+  const colors = ['#ef4444','#3b82f6','#8b5cf6','#22c55e','#f97316'];
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = (-Math.random() * 15) + 's';
+    p.style.width = p.style.height = (3 + Math.random() * 5) + 'px';
+    container.appendChild(p);
+  }
+})();
+
+// ===================== Tab Switch =====================
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const tabMap = { intro: 0, fenton: 1, ozone: 2, compare: 3, quiz: 4 };
+  btns[tabMap[name]].classList.add('active');
+  if (name === 'fenton') { renderFentonStep(); }
+  if (name === 'ozone')  { renderOzoneStep(); }
+}
+
+// ===================== FENTON CANVAS =====================
+const fentonStepData = [
+  {
+    eq: 'H₂O₂  ──扩散──▶  催化剂表面',
+    desc: 'H₂O₂ 分子从液相通过外扩散（对流传质）和内扩散（孔道传质）到达催化剂表面活性位点附近，并被表面捕获吸附。这是反应的第一步——传质控制阶段。',
+    label: '步骤 1 / 5'
+  },
+  {
+    eq: '≡Fe²⁺_surf + H₂O₂ → ≡Fe³⁺_surf + ·OH + OH⁻',
+    desc: '表面 Fe²⁺ 位点通过单电子转移（Haber-Weiss 型）断裂 H₂O₂ 的 O-O 键，生成高活性羟基自由基 ·OH 和 OH⁻，同时 Fe²⁺ 被氧化为 Fe³⁺。这是 ·OH 产生的核心步骤。',
+    label: '步骤 2 / 5'
+  },
+  {
+    eq: '·OH + R(有机物) → R· → CO₂ + H₂O',
+    desc: '·OH（氧化电位 +2.80 V vs. NHE）以极快速率（10⁸~10¹⁰ M⁻¹s⁻¹）攻击有机污染物，通过夺氢、加成或电子转移引发链式氧化，最终将有机物矿化为 CO₂ 和 H₂O。',
+    label: '步骤 3 / 5'
+  },
+  {
+    eq: '≡Fe³⁺_surf + H₂O₂ → ≡Fe²⁺_surf + ·OOH + H⁺',
+    desc: 'Fe³⁺ 被 H₂O₂ 还原再生为 Fe²⁺，同时产生过氧羟基自由基 ·OOH（即 ·O₂⁻ 的质子化形式）。这一步骤是非均相芬顿体系的速率限制步骤，比 Fe²⁺ + H₂O₂ 慢约 1000 倍。',
+    label: '步骤 4 / 5'
+  },
+  {
+    eq: '≡Fe³⁺_surf + ·O₂⁻ → ≡Fe²⁺_surf + O₂',
+    desc: '超氧自由基 ·O₂⁻ 作为强还原剂，可迅速将 Fe³⁺ 还原为 Fe²⁺，加速铁循环。·O₂⁻ 来源于有机物氧化中间体及 ·OOH 去质子化。这一路径显著提升了催化剂的循环效率。',
+    label: '步骤 5 / 5'
+  }
+];
+
+let fentonStep = 0;
+let fentonAnimId = null;
+let fentonAutoTimer = null;
+
+function setFentonStep(n) {
+  fentonStep = n;
+  document.querySelectorAll('[id^=fs-]').forEach((el, i) => {
+    el.classList.toggle('active', i === n);
+  });
+  renderFentonStep();
+}
+
+function nextFentonStep() { setFentonStep((fentonStep + 1) % 5); }
+function prevFentonStep() { setFentonStep((fentonStep + 4) % 5); }
+
+function autoPlayFenton() {
+  if (fentonAutoTimer) { clearInterval(fentonAutoTimer); fentonAutoTimer = null; return; }
+  fentonAutoTimer = setInterval(() => {
+    nextFentonStep();
+    if (fentonStep === 0) { clearInterval(fentonAutoTimer); fentonAutoTimer = null; }
+  }, 2500);
+}
+
+// Particle system for canvas
+function makeParticle(x, y, vx, vy, radius, color, life, label) {
+  return { x, y, vx, vy, radius, color, life, maxLife: life, label: label || '' };
+}
+
+let fentonParticles = [];
+let fentonT = 0;
+
+function renderFentonStep() {
+  const data = fentonStepData[fentonStep];
+  document.getElementById('fenton-eq').textContent = data.eq;
+  document.getElementById('fenton-desc').textContent = data.desc;
+  document.getElementById('fenton-step-label').textContent = data.label;
+
+  if (fentonAnimId) cancelAnimationFrame(fentonAnimId);
+  fentonParticles = [];
+  fentonT = 0;
+  animateFenton();
+}
+
+function animateFenton() {
+  const canvas = document.getElementById('fentonCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  fentonT++;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Background grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Draw catalyst surface
+  drawCatalystSurface(ctx, W, H);
+
+  // Step-specific drawing
+  switch(fentonStep) {
+    case 0: drawFentonStep0(ctx, W, H); break;
+    case 1: drawFentonStep1(ctx, W, H); break;
+    case 2: drawFentonStep2(ctx, W, H); break;
+    case 3: drawFentonStep3(ctx, W, H); break;
+    case 4: drawFentonStep4(ctx, W, H); break;
+  }
+
+  fentonAnimId = requestAnimationFrame(animateFenton);
+}
+
+function drawCatalystSurface(ctx, W, H) {
+  const surfY = H * 0.68;
+  // Surface gradient
+  const grad = ctx.createLinearGradient(0, surfY, 0, H);
+  grad.addColorStop(0, 'rgba(249,115,22,0.3)');
+  grad.addColorStop(1, 'rgba(249,115,22,0.05)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, surfY, W, H - surfY);
+
+  // Surface line
+  ctx.strokeStyle = '#f97316';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, surfY);
+  // Wavy surface
+  for (let x = 0; x <= W; x += 4) {
+    const y = surfY + Math.sin((x / W) * Math.PI * 6 + fentonT * 0.02) * 3;
+    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Surface label
+  ctx.fillStyle = 'rgba(249,115,22,0.8)';
+  ctx.font = '12px Segoe UI';
+  ctx.fillText('催化剂表面 (Fe₃O₄ / FeOOH)', 12, surfY + 20);
+
+  // Fe sites on surface
+  const feSites = [0.15, 0.30, 0.50, 0.70, 0.85];
+  feSites.forEach(fx => {
+    const x = fx * W, y = surfY - 2;
+    // Glow
+    const grd = ctx.createRadialGradient(x, y, 0, x, y, 16);
+    grd.addColorStop(0, 'rgba(249,115,22,0.5)');
+    grd.addColorStop(1, 'rgba(249,115,22,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 9px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Step-dependent label
+    const feLabel = (fentonStep >= 1 && fentonStep <= 2) ? 'Fe³⁺' : 'Fe²⁺';
+    ctx.fillText(feLabel, x, y);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  });
+}
+
+function drawMolecule(ctx, x, y, label, color, r, glowing) {
+  if (glowing) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+    g.addColorStop(0, color.replace(')', ',0.6)').replace('rgb', 'rgba'));
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r * 3, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'white';
+  ctx.font = `bold ${Math.max(9, r - 2)}px Segoe UI`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - 10 * Math.cos(angle - 0.4), y2 - 10 * Math.sin(angle - 0.4));
+  ctx.lineTo(x2 - 10 * Math.cos(angle + 0.4), y2 - 10 * Math.sin(angle + 0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawFentonStep0(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = fentonT;
+  // H2O2 molecules in liquid phase descending
+  const molecules = [0.2, 0.45, 0.72];
+  molecules.forEach((fx, i) => {
+    const baseY = 80 + i * 40;
+    const phase = (t * 0.8 + i * 60) % (surfY - 80);
+    const y = baseY + phase * 0.5;
+    const x = fx * W + Math.sin(t * 0.03 + i) * 20;
+    const clampedY = Math.min(y, surfY - 20);
+    drawMolecule(ctx, x, clampedY, 'H₂O₂', '#3b82f6', 18, clampedY > surfY - 60);
+  });
+
+  // Label
+  ctx.fillStyle = 'rgba(59,130,246,0.8)';
+  ctx.font = '13px Segoe UI';
+  ctx.fillText('▼ 液相扩散传质', W * 0.55, 60);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px Segoe UI';
+  ctx.fillText('外扩散 + 孔道内扩散', W * 0.55, 80);
+}
+
+function drawFentonStep1(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = fentonT;
+  const pulse = Math.sin(t * 0.08) * 5;
+
+  // H2O2 at surface sites
+  const sites = [0.30, 0.70];
+  sites.forEach(fx => {
+    const x = fx * W;
+    drawMolecule(ctx, x, surfY - 40 + pulse, 'H₂O₂', '#3b82f6', 18, true);
+    drawArrow(ctx, x, surfY - 20, x, surfY - 12, '#ef4444');
+  });
+
+  // OH burst animation
+  const burst = (t % 80) / 80;
+  if (burst > 0.4) {
+    const bx = W * 0.30, by = surfY - 15;
+    const r = (burst - 0.4) * 80;
+    ctx.globalAlpha = Math.max(0, 1 - burst);
+    drawMolecule(ctx, bx + r * Math.cos(0.5), by - r * Math.sin(0.5), '·OH', '#ef4444', 14, true);
+    drawMolecule(ctx, bx - r * 0.3, by - r * 0.8, 'OH⁻', '#ef4444', 12, false);
+    ctx.globalAlpha = 1;
+  }
+  if ((t + 40) % 80 > 32) {
+    const bx = W * 0.70, by = surfY - 15;
+    const r = ((t + 40) % 80 - 32) * 1.2;
+    ctx.globalAlpha = Math.max(0, 1 - r/60);
+    drawMolecule(ctx, bx + r * 0.7, by - r * 0.7, '·OH', '#ef4444', 14, true);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.fillStyle = '#ef4444';
+  ctx.font = 'bold 14px Segoe UI';
+  ctx.fillText('⚡ O-O 键断裂 → ·OH 产生！', W * 0.1, surfY - 90);
+}
+
+function drawFentonStep2(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = fentonT;
+
+  // ·OH moving in liquid
+  const angle = t * 0.04;
+  const ohX = W * 0.5 + Math.cos(angle) * 120;
+  const ohY = surfY * 0.45 + Math.sin(angle * 0.7) * 50;
+  drawMolecule(ctx, ohX, ohY, '·OH', '#ef4444', 16, true);
+
+  // Pollutant molecule
+  const pollX = W * 0.5, pollY = surfY * 0.28;
+  drawMolecule(ctx, pollX, pollY, 'R', '#a855f7', 22, false);
+  ctx.fillStyle = '#a855f7';
+  ctx.font = '11px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('有机污染物', pollX, pollY + 36);
+  ctx.textAlign = 'left';
+
+  // If close, show attack
+  const dist = Math.hypot(ohX - pollX, ohY - pollY);
+  if (dist < 60) {
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(pollX, pollY, 60, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 13px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('💥 攻击！', pollX, pollY - 40);
+    ctx.textAlign = 'left';
+  }
+
+  // Products drifting
+  const co2Y = surfY * 0.18 + Math.sin(t * 0.02) * 10;
+  drawMolecule(ctx, W * 0.25, co2Y, 'CO₂', '#6b7280', 14, false);
+  drawMolecule(ctx, W * 0.78, co2Y + 15, 'H₂O', '#3b82f6', 14, false);
+
+  ctx.fillStyle = 'rgba(168,85,247,0.7)';
+  ctx.font = '12px Segoe UI';
+  ctx.fillText('→ 矿化产物', W * 0.82, H * 0.2);
+}
+
+function drawFentonStep3(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = fentonT;
+  const pulse = 0.5 + Math.sin(t * 0.06) * 0.3;
+
+  // H2O2 approaching Fe3+ at surface
+  const hx = W * 0.5, hy = surfY - 60 - Math.abs(Math.sin(t * 0.04)) * 40;
+  drawMolecule(ctx, hx, hy, 'H₂O₂', '#3b82f6', 18, hy > surfY - 80);
+
+  // OOH releasing
+  if (t % 100 > 50) {
+    const phase = (t % 100 - 50) / 50;
+    const rx = hx + phase * 80 * Math.cos(0.8);
+    const ry = surfY - 40 - phase * 60;
+    drawMolecule(ctx, rx, ry, '·OOH', '#22c55e', 15, true);
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '12px Segoe UI';
+  ctx.fillText('速率限制步骤 ⚠️', W * 0.06, H * 0.2);
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '11px Segoe UI';
+  ctx.fillText('比 Fe²⁺+H₂O₂ 慢约 1000 倍', W * 0.06, H * 0.22 + 15);
+}
+
+function drawFentonStep4(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = fentonT;
+
+  // ·O2- moving toward Fe3+ site
+  const o2Angle = t * 0.05;
+  const o2X = W * 0.5 + Math.cos(o2Angle + Math.PI) * 100;
+  const o2Y = surfY - 50 + Math.sin(o2Angle * 0.6) * 30;
+  drawMolecule(ctx, o2X, o2Y, '·O₂⁻', '#22c55e', 18, true);
+
+  // Arrow pointing to Fe site
+  drawArrow(ctx, o2X, o2Y + 15, W * 0.5, surfY - 10, '#22c55e');
+
+  // O2 released
+  const o2RelX = W * 0.7 + Math.sin(t * 0.03) * 20;
+  const o2RelY = surfY - 80 - t * 0.3 % 60;
+  drawMolecule(ctx, o2RelX, o2RelY, 'O₂', '#86efac', 14, false);
+
+  ctx.fillStyle = '#22c55e';
+  ctx.font = 'bold 13px Segoe UI';
+  ctx.fillText('·O₂⁻ 加速 Fe 循环！', W * 0.1, H * 0.25);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px Segoe UI';
+  ctx.fillText('超氧辅助路径（更高效）', W * 0.1, H * 0.27 + 16);
+}
+
+// ===================== OZONE CANVAS =====================
+const ozoneStepData = [
+  {
+    eq: 'O₃(aq)  ──扩散──▶  催化剂表面',
+    desc: 'O₃ 从液相（或气相）通过对流扩散和内孔扩散传质至催化剂表面，被表面活性位点（Lewis 酸位 ≡M 或 Brønsted 羟基 ≡M-OH）捕获。传质速率受 O₃ 分压、催化剂比表面积影响。',
+    label: '步骤 1 / 5'
+  },
+  {
+    eq: '≡M-OH + O₃ → ≡M-OOO· + H⁺',
+    desc: '表面 Brønsted 羟基 ≡M-OH 对 O₃ 末端氧发起亲核进攻，形成表面臭氧化物中间体 ≡M-OOO·，同时释放质子 H⁺。表面 Lewis 酸位点同样可通过配位作用活化吸附态 O₃。',
+    label: '步骤 2 / 5'
+  },
+  {
+    eq: '≡M-OOO· → ≡M-O· + O₂',
+    desc: '表面臭氧化物中间体极不稳定，O-O 键均裂分解，释放分子 O₂ 并在表面留下高活性的表面氧物种 ≡M-O·（相当于表面结合态氧自由基）。这是 ·OH 产生的前体步骤。',
+    label: '步骤 3 / 5'
+  },
+  {
+    eq: '≡M-O· + H₂O → ≡M-OH + ·OH',
+    desc: '表面氧物种 ≡M-O· 与液相水分子反应，将活性氧转移至液相，生成自由态羟基自由基 ·OH，同时表面羟基 ≡M-OH 再生，完成催化循环。·OH 进入液相后引发链式氧化。',
+    label: '步骤 4 / 5'
+  },
+  {
+    eq: '·OH + O₃ → ·O₂⁻ + H⁺ + O₂  →  链式放大',
+    desc: '液相 ·OH 继续攻击 O₃，生成 HO₂·/·O₂⁻，后者再与 O₃ 反应生成更多 ·OH（Staehelin-Hoigné 链式机理），形成自加速的链式氧化循环，使 ·OH 产率远高于单独臭氧化。',
+    label: '步骤 5 / 5'
+  }
+];
+
+let ozoneStep = 0;
+let ozoneAnimId = null;
+let ozoneAutoTimer = null;
+let ozoneT = 0;
+
+function setOzoneStep(n) {
+  ozoneStep = n;
+  document.querySelectorAll('[id^=os-]').forEach((el, i) => {
+    el.classList.toggle('active', i === n);
+  });
+  renderOzoneStep();
+}
+
+function nextOzoneStep() { setOzoneStep((ozoneStep + 1) % 5); }
+function prevOzoneStep() { setOzoneStep((ozoneStep + 4) % 5); }
+
+function autoPlayOzone() {
+  if (ozoneAutoTimer) { clearInterval(ozoneAutoTimer); ozoneAutoTimer = null; return; }
+  ozoneAutoTimer = setInterval(() => {
+    nextOzoneStep();
+    if (ozoneStep === 0) { clearInterval(ozoneAutoTimer); ozoneAutoTimer = null; }
+  }, 2500);
+}
+
+function renderOzoneStep() {
+  const data = ozoneStepData[ozoneStep];
+  document.getElementById('ozone-eq').textContent = data.eq;
+  document.getElementById('ozone-desc').textContent = data.desc;
+  document.getElementById('ozone-step-label').textContent = data.label;
+
+  if (ozoneAnimId) cancelAnimationFrame(ozoneAnimId);
+  ozoneT = 0;
+  animateOzone();
+}
+
+function animateOzone() {
+  const canvas = document.getElementById('ozoneCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ozoneT++;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  drawOzoneCatalystSurface(ctx, W, H);
+
+  switch(ozoneStep) {
+    case 0: drawOzoneStep0(ctx, W, H); break;
+    case 1: drawOzoneStep1(ctx, W, H); break;
+    case 2: drawOzoneStep2(ctx, W, H); break;
+    case 3: drawOzoneStep3(ctx, W, H); break;
+    case 4: drawOzoneStep4(ctx, W, H); break;
+  }
+
+  ozoneAnimId = requestAnimationFrame(animateOzone);
+}
+
+function drawOzoneCatalystSurface(ctx, W, H) {
+  const surfY = H * 0.68;
+  const grad = ctx.createLinearGradient(0, surfY, 0, H);
+  grad.addColorStop(0, 'rgba(139,92,246,0.3)');
+  grad.addColorStop(1, 'rgba(139,92,246,0.05)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, surfY, W, H - surfY);
+
+  ctx.strokeStyle = '#8b5cf6';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 4) {
+    const y = surfY + Math.sin((x / W) * Math.PI * 8 + ozoneT * 0.025) * 2.5;
+    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(139,92,246,0.8)';
+  ctx.font = '12px Segoe UI';
+  ctx.fillText('催化剂表面 (MnO₂ / Al₂O₃ / TiO₂)', 12, surfY + 20);
+
+  // Surface M-OH sites
+  const sites = [0.15, 0.30, 0.50, 0.70, 0.85];
+  sites.forEach(fx => {
+    const x = fx * W, y = surfY - 2;
+    const grd = ctx.createRadialGradient(x, y, 0, x, y, 16);
+    grd.addColorStop(0, 'rgba(6,182,212,0.5)');
+    grd.addColorStop(1, 'rgba(6,182,212,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#06b6d4';
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 7px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('M-OH', x, y);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  });
+}
+
+function drawO3Molecule(ctx, x, y, glowing) {
+  const r = 20;
+  if (glowing) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
+    g.addColorStop(0, 'rgba(139,92,246,0.6)');
+    g.addColorStop(1, 'rgba(139,92,246,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r * 2.5, 0, Math.PI*2); ctx.fill();
+  }
+  // Three oxygen atoms in bent shape
+  const positions = [{dx:-12,dy:5},{dx:0,dy:-8},{dx:12,dy:5}];
+  positions.forEach((p, i) => {
+    ctx.fillStyle = i === 1 ? '#a78bfa' : '#8b5cf6';
+    ctx.beginPath(); ctx.arc(x + p.dx, y + p.dy, 8, 0, Math.PI*2); ctx.fill();
+  });
+  // Bond lines
+  ctx.strokeStyle = '#c4b5fd';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x-12, y+5); ctx.lineTo(x, y-8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y-8); ctx.lineTo(x+12, y+5); ctx.stroke();
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 9px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('O₃', x, y + 18);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+}
+
+function drawOzoneStep0(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = ozoneT;
+  // O3 molecules descending
+  const mols = [0.2, 0.5, 0.75];
+  mols.forEach((fx, i) => {
+    const phase = (t * 0.7 + i * 50) % (surfY - 80);
+    const x = fx * W + Math.sin(t * 0.025 + i * 2) * 25;
+    const y = 60 + i * 30 + phase * 0.5;
+    const clampedY = Math.min(y, surfY - 30);
+    drawO3Molecule(ctx, x, clampedY, clampedY > surfY - 70);
+  });
+  ctx.fillStyle = 'rgba(139,92,246,0.8)';
+  ctx.font = '13px Segoe UI';
+  ctx.fillText('▼ O₃ 向表面扩散传质', W * 0.06, 55);
+}
+
+function drawOzoneStep1(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = ozoneT;
+  const pulse = Math.sin(t * 0.07) * 4;
+
+  // O3 at surface
+  const sites2 = [0.3, 0.7];
+  sites2.forEach(fx => {
+    const x = fx * W;
+    drawO3Molecule(ctx, x, surfY - 52 + pulse, true);
+    drawArrow(ctx, x, surfY - 30, x, surfY - 14, '#8b5cf6');
+  });
+
+  // Surface ozonide forming
+  if (t % 90 > 45) {
+    const phase = (t % 90 - 45) / 45;
+    const ox = W * 0.3, oy = surfY - 12;
+    ctx.fillStyle = `rgba(245,158,11,${phase})`;
+    ctx.font = 'bold 11px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('≡M-OOO·', ox, oy - 25);
+    ctx.textAlign = 'left';
+  }
+
+  ctx.fillStyle = 'rgba(245,158,11,0.9)';
+  ctx.font = 'bold 14px Segoe UI';
+  ctx.fillText('⚡ 亲核反应 → 表面臭氧化物！', W * 0.08, H * 0.15);
+}
+
+function drawOzoneStep2(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = ozoneT;
+
+  // Ozonide decomposing
+  const decompX = W * 0.5, decompY = surfY - 30;
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = 'bold 12px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('≡M-OOO·', decompX, decompY - 10);
+  ctx.textAlign = 'left';
+
+  // O2 flying up
+  const o2Phase = (t * 1.2) % 120;
+  const o2x = W * 0.5 + (o2Phase - 60) * 0.5;
+  const o2y = surfY - 30 - o2Phase * 0.6;
+  if (o2y > 20) {
+    drawMolecule(ctx, o2x, o2y, 'O₂', '#86efac', 14, false);
+  }
+
+  // Surface M-O* forming
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 13px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('≡M-O·', W * 0.5, surfY - 48);
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = '#ef4444';
+  ctx.font = 'bold 13px Segoe UI';
+  ctx.fillText('🔴 高活性表面氧 ≡M-O·', W * 0.06, H * 0.15);
+}
+
+function drawOzoneStep3(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = ozoneT;
+
+  // Water molecule approaching
+  const wH2Ox = W * 0.5 + Math.sin(t * 0.04) * 30;
+  const wH2Oy = surfY * 0.45;
+  drawMolecule(ctx, wH2Ox, wH2Oy, 'H₂O', '#3b82f6', 18, false);
+
+  drawArrow(ctx, wH2Ox, wH2Oy + 18, W * 0.5, surfY - 20, '#3b82f6');
+
+  // OH being released
+  const ohPhase = (t % 100) / 100;
+  if (ohPhase > 0.4) {
+    const r = (ohPhase - 0.4) * 100;
+    ctx.globalAlpha = Math.max(0, 1 - ohPhase * 1.2);
+    drawMolecule(ctx, W * 0.5 + r * 0.8, surfY - 30 - r * 0.6, '·OH', '#ef4444', 16, true);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.fillStyle = '#ef4444';
+  ctx.font = 'bold 14px Segoe UI';
+  ctx.fillText('💥 ·OH 释放进入液相！', W * 0.06, H * 0.15);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px Segoe UI';
+  ctx.fillText('同时 ≡M-OH 再生 → 催化循环', W * 0.06, H * 0.18);
+}
+
+function drawOzoneStep4(ctx, W, H) {
+  const surfY = H * 0.68;
+  const t = ozoneT;
+
+  // Chain reaction visualization
+  const chainX = [W*0.15, W*0.35, W*0.55, W*0.75];
+  const chainY = [H*0.28, H*0.38, H*0.25, H*0.35];
+  const chainColors = ['#ef4444','#8b5cf6','#22c55e','#ef4444'];
+  const chainLabels = ['·OH', 'O₃', '·O₂⁻', '·OH'];
+
+  chainX.forEach((cx, i) => {
+    const active = Math.floor(t / 25) % 4 === i;
+    const scale = active ? 1 + Math.sin(t * 0.2) * 0.2 : 1;
+    ctx.save();
+    ctx.translate(cx, chainY[i]);
+    ctx.scale(scale, scale);
+    drawMolecule(ctx, 0, 0, chainLabels[i], chainColors[i], 18, active);
+    ctx.restore();
+    if (i < chainX.length - 1) {
+      drawArrow(ctx, cx + 22, chainY[i], chainX[i+1] - 22, chainY[i+1], '#64748b');
+    }
+  });
+
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = 'bold 13px Segoe UI';
+  ctx.fillText('🔗 Staehelin-Hoigné 链式机理', W * 0.06, H * 0.14);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px Segoe UI';
+  ctx.fillText('·OH 产率自加速扩增 3~10 倍', W * 0.06, H * 0.17);
+}
+
+// Init
+renderFentonStep();
+
+// ===================== QUIZ =====================
+const quizData = [
+  {
+    q: '非均相芬顿反应产生·OH的核心步骤是？',
+    options: [
+      'A. H₂O₂ 在液相均匀分解',
+      'B. 表面 ≡Fe²⁺ 催化裂解 H₂O₂ 的 O-O 键',
+      'C. Fe³⁺ 直接与有机物反应',
+      'D. O₃ 在表面分解'
+    ],
+    answer: 1,
+    explanation: '非均相芬顿的核心是表面 Fe²⁺ 位点通过单电子转移使 H₂O₂ 的 O-O 键均裂，产生高活性 ·OH 自由基，同时 Fe²⁺ 被氧化为 Fe³⁺。'
+  },
+  {
+    q: '非均相催化臭氧体系中，表面臭氧化物中间体（≡M-OOO·）的分解产物是？',
+    options: [
+      'A. ≡M-OH + O₃',
+      'B. ≡M-O· + O₂',
+      'C. ≡M + 3O',
+      'D. ≡M-H + O₃'
+    ],
+    answer: 1,
+    explanation: '≡M-OOO· 不稳定，O-O 键均裂分解为表面活性氧物种 ≡M-O· 并释放 O₂。≡M-O· 是生成 ·OH 的直接前体。'
+  },
+  {
+    q: '非均相芬顿体系中，哪一步骤通常是速率限制步骤？',
+    options: [
+      'A. H₂O₂ 扩散到催化剂表面',
+      'B. ≡Fe²⁺ + H₂O₂ → ≡Fe³⁺ + ·OH',
+      'C. ≡Fe³⁺ 还原再生为 ≡Fe²⁺',
+      'D. ·OH 攻击有机污染物'
+    ],
+    answer: 2,
+    explanation: 'Fe³⁺ 被 H₂O₂ 还原再生为 Fe²⁺ 的速率常数比 Fe²⁺+H₂O₂ 小约 1000 倍，是整个催化循环中速率最慢的步骤，因此是速率限制步骤。'
+  },
+  {
+    q: '与单独臭氧化相比，非均相催化臭氧化的主要优势是？',
+    options: [
+      'A. 消除了对臭氧的需求',
+      'B. 催化剂表面活化 O₃，大幅提升 ·OH 产率（可达 3~10 倍）',
+      'C. 将反应 pH 限制在酸性范围',
+      'D. 减少了 H₂O 的生成'
+    ],
+    answer: 1,
+    explanation: '催化剂表面通过表面臭氧化物中间体的分解路径，使 O₃ 转化为 ·OH 的效率大幅提升，·OH 产率比单独臭氧化高 3~10 倍，从而提升有机物矿化效率。'
+  },
+  {
+    q: '超氧自由基 ·O₂⁻ 在非均相芬顿体系中的作用是？',
+    options: [
+      'A. 直接降解有机污染物',
+      'B. 将 ≡Fe³⁺ 还原为 ≡Fe²⁺，加速铁循环',
+      'C. 抑制 ·OH 的产生',
+      'D. 催化 H₂O₂ 分解为 H₂O 和 O₂'
+    ],
+    answer: 1,
+    explanation: '·O₂⁻ 作为强还原剂，可迅速将表面 Fe³⁺ 还原为 Fe²⁺（速率常数 ~1.5×10⁸ M⁻¹s⁻¹），加速铁循环并提升 ·OH 产率。'
+  },
+  {
+    q: '非均相催化臭氧体系的表面关键活性位点是？',
+    options: [
+      'A. 表面金属离子溶出后形成的均相铁离子',
+      'B. 表面 Brønsted 羟基 ≡M-OH 及 Lewis 酸位 ≡M',
+      'C. 有机物在催化剂表面的吸附位点',
+      'D. 臭氧自身的极性端基团'
+    ],
+    answer: 1,
+    explanation: '催化剂表面的 Brønsted 羟基（≡M-OH）通过亲核进攻与 O₃ 反应；Lewis 酸位（≡M）则通过配位作用活化 O₃，两者都是 O₃ 活化的关键表面位点。'
+  },
+  {
+    q: 'Staehelin-Hoigné 链式机理描述的是？',
+    options: [
+      'A. 非均相芬顿体系中 Fe 的循环过程',
+      'B. 非均相催化臭氧中 ·OH 与 O₃ 链式反应导致 ·OH 产率自加速扩增',
+      'C. 有机物在催化剂表面的吸附等温线',
+      'D. 催化剂表面臭氧化物中间体的形成机理'
+    ],
+    answer: 1,
+    explanation: 'Staehelin-Hoigné 机理描述了水溶液中 O₃ 分解的链式反应：·OH 与 O₃ 生成 ·O₂⁻，·O₂⁻ 再与 O₃ 生成更多 ·OH，形成链式扩增循环，是催化臭氧体系 ·OH 高产率的重要原因。'
+  },
+  {
+    q: '两种非均相高级氧化体系（芬顿与催化臭氧）的核心共同点是？',
+    options: [
+      'A. 都使用 H₂O₂ 作为主要氧化剂',
+      'B. 反应核心均为催化剂表面反应，通过表面活性中间体产生 ·OH',
+      'C. 都只在酸性条件（pH<4）下有效',
+      'D. 都不产生超氧自由基'
+    ],
+    answer: 1,
+    explanation: '两者的核心共同点均是催化剂表面反应主导机理：芬顿体系通过表面 ≡Fe²⁺ 活化 H₂O₂，催化臭氧通过表面 ≡M-OH 活化 O₃，都是通过表面活性中间体产生 ·OH。这正是它们被称为"非均相"高级氧化的根本原因。'
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let answered = [];
+
+function startQuiz() {
+  document.querySelector('.quiz-intro').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  currentQ = 0; score = 0; answered = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizData[currentQ];
+  document.getElementById('q-count').textContent = `问题 ${currentQ + 1} / ${quizData.length}`;
+  document.getElementById('q-progress').style.width = `${((currentQ) / quizData.length) * 100}%`;
+  document.getElementById('q-score-label').textContent = `得分: ${score}`;
+
+  const area = document.getElementById('question-area');
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="q-num">问题 ${currentQ + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.options.map((opt, i) => `
+          <button class="option-btn" onclick="answerQ(${i})" id="opt-${i}">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.explanation}</div>
+      <div id="next-btn-area" style="margin-top:16px;display:none">
+        <button class="ctrl-btn primary-btn" onclick="nextQuestion()" style="padding:8px 24px">
+          ${currentQ < quizData.length - 1 ? '下一题 →' : '查看结果 🎓'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function answerQ(idx) {
+  const q = quizData[currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.answer].classList.add('correct');
+  if (idx !== q.answer) {
+    btns[idx].classList.add('wrong');
+  } else {
+    score++;
+  }
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('next-btn-area').style.display = 'block';
+  document.getElementById('q-score-label').textContent = `得分: ${score}`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= quizData.length) {
+    showScore();
+    return;
+  }
+  renderQuestion();
+}
+
+function showScore() {
+  document.getElementById('quiz-area').style.display = 'none';
+  const disp = document.getElementById('score-display');
+  disp.classList.add('show');
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('score-msg').textContent = `/ ${quizData.length} 分`;
+  const pct = score / quizData.length;
+  let comment = '';
+  if (pct >= 0.875)     comment = '🌟 优秀！你已深入掌握非均相高级氧化反应机理！';
+  else if (pct >= 0.625) comment = '👍 良好！基本概念已掌握，建议复习活性物种生成步骤。';
+  else if (pct >= 0.375) comment = '📚 继续努力！回顾各步骤方程式和表面反应机理。';
+  else                    comment = '💪 需要加强学习，建议重新学习各反应步骤动画。';
+  document.getElementById('score-comment').textContent = comment;
+}
+
+function restartQuiz() {
+  document.getElementById('score-display').classList.remove('show');
+  document.querySelector('.quiz-intro').style.display = 'block';
+  document.getElementById('quiz-area').style.display = 'none';
+}
+</script>
+</body>
+</html>
