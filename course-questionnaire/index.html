@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《高级氧化技术》课程前测与学习规划</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 { color: var(--primary-color); margin-bottom: 10px; }
+        h2 { color: var(--accent-color); font-size: 1.2rem; margin-top: 30px; border-left: 5px solid var(--accent-color); padding-left: 10px; }
+        .desc { color: #666; font-size: 0.9rem; }
+
+        .form-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .radio-group label, .checkbox-group label {
+            font-weight: normal;
+            display: block;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        button.submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 30px;
+        }
+
+        button.submit-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* 结果区域样式 */
+        #result-area {
+            display: none;
+            margin-top: 40px;
+            border-top: 3px dashed #ccc;
+            padding-top: 30px;
+            animation: fadeIn 1s;
+        }
+
+        .advice-card {
+            background: #e8f6f3;
+            border: 1px solid #a2d9ce;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .advice-title {
+            color: #16a085;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-download {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-email {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .btn-print {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>《高级氧化技术》课程前测问卷</h1>
+        <p class="desc">本问卷旨在了解同学们的专业英语基础和相关知识储备，以便更好地调整教学节奏。答案无对错之分，请如实作答。预计用时 8-12 分钟。</p>
+    </header>
+
+    <form id="surveyForm">
+        <!-- 补充：姓名输入，方便报告识别 -->
+        <div class="form-group" style="background: #eef2f3; border-left: 5px solid #2c3e50;">
+            <label>👤 您的姓名：</label>
+            <input type="text" id="studentName" placeholder="请输入您的姓名" required>
+        </div>
+
+        <!-- 第一部分：基本信息 -->
+        <h2>第一部分：基本信息</h2>
+        <div class="form-group">
+            <label>1. 您的专业方向：</label>
+            <div class="radio-group">
+                <label><input type="radio" name="major" value="环境科学" required> 环境科学</label>
+                <label><input type="radio" name="major" value="环境工程"> 环境工程</label>
+                <label><input type="radio" name="major" value="给排水科学与工程"> 给排水科学与工程</label>
+                <label><input type="radio" name="major" value="应用化学"> 应用化学</label>
+                <label><input type="radio" name="major" value="其他"> 其他</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>2. 大学期间是否修读过专业英语/科技英语课程？</label>
+            <div class="radio-group">
+                <label><input type="radio" name="eng_course" value="是，已修读并通过" required> 是，已修读并通过</label>
+                <label><input type="radio" name="eng_course" value="正在修读"> 正在修读</label>
+                <label><input type="radio" name="eng_course" value="未修读"> 未修读</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>3. 是否查阅过英文专业文献（如 SCI 论文、技术手册）？</label>
+            <div class="radio-group">
+                <label><input type="radio" name="lit_freq" value="频繁查阅 (>20 篇)" required> 频繁查阅 (>20 篇)</label>
+                <label><input type="radio" name="lit_freq" value="偶尔查阅 (5-20 篇)"> 偶尔查阅 (5-20 篇)</label>
+                <label><input type="radio" name="lit_freq" value="很少查阅 (<5 篇)"> 很少查阅 (<5 篇)</label>
+                <label><input type="radio" name="lit_freq" value="从未查阅"> 从未查阅</label>
+            </div>
+        </div>
+
+        <!-- 第二部分：专业英语能力 -->
+        <h2>第二部分：专业英语能力测试</h2>
+        <div class="form-group">
+            <label>4. Oxidation 最准确的中文释义：</label>
+            <div class="radio-group"><label><input type="radio" name="q4" value="correct"> 氧化</label><label><input type="radio" name="q4" value="wrong"> 氧气</label><label><input type="radio" name="q4" value="wrong"> 氧化物</label></div>
+        </div>
+        <div class="form-group">
+            <label>5. Radical（在化学语境中）的含义：</label>
+            <div class="radio-group"><label><input type="radio" name="q5" value="wrong"> 激进的</label><label><input type="radio" name="q5" value="correct"> 自由基/游离基</label><label><input type="radio" name="q5" value="wrong"> 根号</label></div>
+        </div>
+        <div class="form-group">
+            <label>6. Hydroxyl radical(•OH) 指的是：</label>
+            <div class="radio-group"><label><input type="radio" name="q6" value="wrong"> 氢氧根离子</label><label><input type="radio" name="q6" value="correct"> 羟基自由基</label><label><input type="radio" name="q6" value="wrong"> 水分子团簇</label></div>
+        </div>
+        <div class="form-group">
+            <label>7. Catalyst 的含义：</label>
+            <div class="radio-group"><label><input type="radio" name="q7" value="correct"> 催化剂</label><label><input type="radio" name="q7" value="wrong"> 催化剂载体</label><label><input type="radio" name="q7" value="wrong"> 反应产物</label></div>
+        </div>
+        <div class="form-group">
+            <label>8. "Photo-"作为前缀通常表示：</label>
+            <div class="radio-group"><label><input type="radio" name="q8" value="correct"> 光/光学</label><label><input type="radio" name="q8" value="wrong"> 照片/图像</label><label><input type="radio" name="q8" value="wrong"> 物理</label></div>
+        </div>
+        <div class="form-group">
+            <label>9. "-lysis"作为后缀的含义通常是：</label>
+            <div class="radio-group"><label><input type="radio" name="q9" value="correct"> 分解/裂解</label><label><input type="radio" name="q9" value="wrong"> 合成</label><label><input type="radio" name="q9" value="wrong"> 溶解</label></div>
+        </div>
+        <div class="form-group">
+            <label>10. 句子理解：*"Advanced oxidation processes(AOPs) are characterized by..."* 最准确的理解是：</label>
+            <div class="radio-group">
+                <label><input type="radio" name="q10" value="correct"> AOPs 通过产生高活性羟基自由基来降解难降解有机污染物</label>
+                <label><input type="radio" name="q10" value="wrong"> AOP 是一种特征明显的氧化过程，用于处理有机污染物</label>
+                <label><input type="radio" name="q10" value="wrong"> 羟基自由基是一种难降解的有机污染物</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>11. 文献阅读（Fenton 反应）：请填写催化剂、反应物、最佳 pH 范围：</label>
+            <textarea name="q11_text" rows="3" placeholder="例如：催化剂是 Fe2+，反应物是..."></textarea>
+        </div>
+
+        <!-- 第三部分：专业知识基础 -->
+        <h2>第三部分：专业知识基础</h2>
+        <div class="form-group">
+            <label>12. 标准氧化还原电位 (E°) 值越大，表示该物质的氧化能力：</label>
+            <div class="radio-group"><label><input type="radio" name="q12" value="correct"> 越强</label><label><input type="radio" name="q12" value="wrong"> 越弱</label></div>
+        </div>
+        <div class="form-group">
+            <label>13. 羟基自由基（•OH）的氧化能力与普通氯气相比：</label>
+            <div class="radio-group"><label><input type="radio" name="q13" value="correct"> 更强</label><label><input type="radio" name="q13" value="wrong"> 更弱</label></div>
+        </div>
+        <div class="form-group">
+            <label>14. 以下哪种物质通常不是常见的高级氧化过程中产生的活性氧物种 (ROS)？</label>
+            <div class="radio-group"><label><input type="radio" name="q14" value="correct"> CO2(二氧化碳)</label><label><input type="radio" name="q14" value="wrong"> •OH(羟基自由基)</label><label><input type="radio" name="q14" value="wrong"> O2•-(超氧阴离子自由基)</label></div>
+        </div>
+        <div class="form-group">
+            <label>15. COD 和 BOD 分别反映水中有机物的：</label>
+            <div class="radio-group"><label><input type="radio" name="q15" value="correct"> 总量和可生物降解部分</label><label><input type="radio" name="q15" value="wrong"> 无机物和有机物含量</label></div>
+        </div>
+        <div class="form-group">
+            <label>16. 以下“氧化剂”中，氧化能力最强的是：</label>
+            <div class="radio-group"><label><input type="radio" name="q16" value="correct"> O3(臭氧)</label><label><input type="radio" name="q16" value="wrong"> Cl2(氯气)</label><label><input type="radio" name="q16" value="wrong"> KMnO4(高锰酸钾)</label></div>
+        </div>
+        <div class="form-group">
+            <label>17. 您之前是否听说过“高级氧化技术”或"AOPs"？</label>
+            <div class="radio-group">
+                <label><input type="radio" name="q17" value="familiar"> 非常熟悉，了解具体工艺</label>
+                <label><input type="radio" name="q17" value="heard"> 听说过，但不知道具体是什么</label>
+                <label><input type="radio" name="q17" value="never"> 完全没听说过</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>18. 若听说过，请写出您知道的 1-3 种具体工艺名称：</label>
+            <input type="text" name="q18_text" placeholder="例如：Fenton, O3/UV...">
+        </div>
+        <div class="form-group">
+            <label>19. 您认为以下哪种情境最适合使用高级氧化技术？（可多选）</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="q19" value="高浓度易降解"> 处理高浓度、易生物降解的有机废水</label>
+                <label><input type="checkbox" name="q19" value="低浓度难降解"> 处理低浓度、难降解有毒有机物</label>
+                <label><input type="checkbox" name="q19" value="饮用水消毒"> 饮用水消毒</label>
+                <label><input type="checkbox" name="q19" value="重金属去除"> 工业废水中重金属的去除</label>
+            </div>
+        </div>
+
+        <!-- 第四部分：学习期望 -->
+        <h2>第四部分：学习期望</h2>
+        <div class="form-group">
+            <label>20. 您希望在本课程中重点提升哪方面的能力？（限选 2 项）</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="expectation" value="专业英语"> 专业英语文献阅读与写作</label>
+                <label><input type="checkbox" name="expectation" value="机理动力学"> 高级氧化反应机理与动力学分析</label>
+                <label><input type="checkbox" name="expectation" "工艺设计"> 工艺设计与工程计算</label>
+                <label><input type="checkbox" name="expectation" value="实验操作"> 实验操作与数据分析</label>
+                <label><input type="checkbox" name="expectation" value="前沿进展"> 了解前沿研究进展</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>21. 对于本课程的教学，您有什么建议或期望？</label>
+            <textarea name="q21_text" rows="3"></textarea>
+        </div>
+
+        <button type="button" class="submit-btn" onclick="generateReport()">生成学习报告</button>
+    </form>
+
+    <!-- 结果展示区 -->
+    <div id="result-area">
+        <div class="advice-card">
+            <div class="advice-title">🎓 您的专属学习规划建议已生成</div>
+            <p><strong><span id="display-name"></span> 同学你好！</strong> 系统已根据你的答题情况生成了分析报告。请执行以下两步操作：</p>
+            <ol>
+                <li>点击下方的 <strong>📥 下载学习报告</strong> 按钮，将文件保存到电脑。</li>
+                <li>点击 <strong>📧 发送邮件给老师</strong> 按钮，将刚才下载的文件作为附件发送。</li>
+            </ol>
+            
+            <div id="dynamic-advice" style="margin-top: 20px; font-weight: bold; color: #2c3e50;">
+                <!-- 动态建议内容 -->
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn btn-download" onclick="downloadFile()">📥 下载学习报告 (.txt)</button>
+            <button class="action-btn btn-email" onclick="sendEmail()">📧 发送邮件给老师</button>
+            <button class="action-btn btn-print" onclick="window.print()">🖨️ 打印/保存 PDF</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let finalReportContent = "";
+    let studentName = "";
+
+    function generateReport() {
+        const form = document.getElementById('surveyForm');
+        const nameInput = document.getElementById('studentName').value;
+        
+        if (!nameInput) {
+            alert("请先输入您的姓名！");
+            return;
+        }
+        studentName = nameInput;
+        document.getElementById('display-name').innerText = studentName;
+
+        const formData = new FormData(form);
+        
+        // 1. 计算英语得分 (Q4-Q10)
+        let engScore = 0;
+        const engQuestions = ['q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10'];
+        engQuestions.forEach(q => {
+            if(formData.get(q) === 'correct') engScore++;
+        });
+        const engTotal = engQuestions.length;
+        const engPercent = Math.round((engScore / engTotal) * 100);
+
+        // 2. 计算专业得分 (Q12-Q16)
+        let proScore = 0;
+        const proQuestions = ['q12', 'q13', 'q14', 'q15', 'q16'];
+        proQuestions.forEach(q => {
+            if(formData.get(q) === 'correct') proScore++;
+        });
+        const proTotal = proQuestions.length;
+        const proPercent = Math.round((proScore / proTotal) * 100);
+
+        // 3. 生成建议逻辑
+        let adviceHTML = "";
+        let adviceText = "";
+
+        // 英语建议
+        if (engPercent < 60) {
+            adviceHTML += "<p style='color:#c0392b'>⚠️ <strong>英语基础需加强：</strong> 您的专业英语测试正确率较低。建议课前重点预习本章核心词汇（如 Oxidation, Radical, Catalyst），利用翻译软件辅助阅读文献摘要。</p>";
+            adviceText += "[英语建议] 基础需加强，请重点预习核心词汇。";
+        } else if (engPercent >= 80) {
+            adviceHTML += "<p style='color:#27ae60'>✅ <strong>英语能力优秀：</strong> 您的专业英语基础很好！建议直接尝试阅读本领域顶刊（如 Water Research）的综述文章，挑战全英文笔记。</p>";
+            adviceText += "[英语建议] 能力优秀，建议直接阅读顶刊。";
+        } else {
+            adviceHTML += "<p style='color:#d35400'>👍 <strong>英语能力良好：</strong> 具备基本阅读能力，建议多关注长难句的结构分析。</p>";
+            adviceText += "[英语建议] 能力良好，关注长难句分析。";
+        }
+
+        // 专业建议
+        if (proPercent < 60) {
+            adviceHTML += "<p style='color:#c0392b'>⚠️ <strong>专业知识需补强：</strong> 您对氧化还原电位、COD/BOD 等基础概念掌握不够牢固。建议复习《环境化学》氧化还原章节，重点理解自由基链式反应机制。</p>";
+            adviceText += "[专业建议] 基础需补强，请复习氧化还原章节。";
+        } else if (proPercent === 100) {
+            adviceHTML += "<p style='color:#27ae60'>✅ <strong>专业知识扎实：</strong> 您的基础非常扎实！建议将学习重点放在“动力学模型拟合”和“反应器设计”上，尝试推导准一级反应动力学方程。</p>";
+            adviceText += "[专业建议] 基础扎实，建议关注动力学模型。";
+        } else {
+            adviceHTML += "<p style='color:#d35400'>👍 <strong>专业知识良好：</strong> 具备一定基础，课程中将重点讲解各类 AOPs 工艺的优缺点对比及适用场景。</p>";
+            adviceText += "[专业建议] 基础良好，关注工艺对比。";
+        }
+
+        document.getElementById('dynamic-advice').innerHTML = adviceHTML;
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+
+        // 4. 组装报告文本内容
+        finalReportContent = `=== 《高级氧化技术》课程前测学习报告 ===\n`;
+        finalReportContent += `生成时间：${new Date().toLocaleString()}\n`;
+        finalReportContent += `学生姓名：${studentName}\n`;
+        finalReportContent += `专业方向：${formData.get('major')}\n`;
+        finalReportContent += `----------------------------------------\n`;
+        finalReportContent += `【能力评估】\n`;
+        finalReportContent += `专业英语得分：${engScore}/${engTotal} (${engPercent}%)\n`;
+        finalReportContent += `专业知识得分：${proScore}/${proTotal} (${proPercent}%)\n`;
+        finalReportContent += `文献阅读频率：${formData.get('lit_freq')}\n`;
+        finalReportContent += `----------------------------------------\n`;
+        finalReportContent += `【系统建议】\n${adviceText}\n`;
+        finalReportContent += `----------------------------------------\n`;
+        finalReportContent += `【学习期望】\n`;
+        finalReportContent += `重点提升：${formData.getAll('expectation').join(', ')}\n`;
+        finalReportContent += `给老师的留言：${formData.get('q21_text') || '无'}\n`;
+        finalReportContent += `========================================\n`;
+        finalReportContent += `注：此文件由课程前测系统自动生成，请学生保存并发送给老师。`;
+    }
+
+    function downloadFile() {
+        if (!finalReportContent) {
+            alert("请先生成报告！");
+            return;
+        }
+        const blob = new Blob([finalReportContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // 文件名包含姓名，方便老师整理
+        a.download = `前测报告_${studentName}_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        alert("报告已下载！请点击下方的“发送邮件”按钮提交。");
+    }
+
+    function sendEmail() {
+        if (!finalReportContent) {
+            alert("请先生成报告！");
+            return;
+        }
+        const teacherEmail = "18438006@qq.com";
+        const subject = `《高级氧化技术》前测报告 - ${studentName}`;
+        const body = `老师您好：\n\n我是 ${studentName}，附件是我的课程前测学习报告，请查收。\n\n------------------\n报告摘要：\n${finalReportContent}`;
+        
+        // 使用 mailto 协议唤起邮件客户端
+        // 注意：mailto 无法直接附加文件，必须提示用户手动添加
+        window.location.href = `mailto:${teacherEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        setTimeout(() => {
+            alert("邮件客户端已打开。\n\n⚠️ 重要提示：\n由于浏览器限制，附件无法自动添加。\n请务必将刚才下载的 .txt 文件拖入邮件附件中再发送！");
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
