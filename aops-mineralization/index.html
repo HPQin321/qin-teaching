@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AOPs: 矿化狂潮</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050510;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* 禁止移动端默认触摸行为 */
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* UI 层 */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 顶部状态栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .stat-box {
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #00ffcc;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* TOC 去除率条 */
+        .toc-container {
+            width: 300px;
+            text-align: center;
+        }
+        .toc-bar-bg {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #555;
+            margin-top: 5px;
+        }
+        .toc-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00);
+            transition: width 0.2s;
+        }
+        .toc-text {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        /* 连击显示 */
+        #combo-display {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            color: #ff0055;
+            font-weight: 900;
+            opacity: 0;
+            text-shadow: 0 0 20px #ff0055;
+            transition: transform 0.1s;
+        }
+
+        /* 终极技能按钮 */
+        #ultimate-btn {
+            pointer-events: auto;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00ccff, #005577);
+            border: 4px solid #fff;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            box-shadow: 0 0 20px #00ccff;
+            align-self: flex-end;
+            margin-bottom: 20px;
+            margin-right: 20px;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+        #ultimate-btn.ready {
+            opacity: 1;
+            animation: pulse 1s infinite;
+            cursor: pointer;
+        }
+        #ultimate-btn:active {
+            transform: scale(0.9);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px #00ccff; }
+            50% { box-shadow: 0 0 40px #00ccff; }
+            100% { box-shadow: 0 0 20px #00ccff; }
+        }
+
+        /* 开始/结束 屏幕 */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 100;
+            pointer-events: auto;
+        }
+        h1 {
+            font-size: 48px;
+            color: #00ffcc;
+            text-shadow: 0 0 20px #00ffcc;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        p { font-size: 18px; color: #ccc; max-width: 600px; text-align: center; line-height: 1.6; }
+        button.start-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #ff0055;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 30px #ff0055;
+            transition: transform 0.2s;
+        }
+        button.start-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 浮动文字 */
+        .floating-text {
+            position: absolute;
+            color: #fff;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s forwards;
+            text-shadow: 0 0 5px #000;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="top-bar">
+            <div class="stat-box">Score: <span id="score">0</span></div>
+            <div class="toc-container">
+                <div class="toc-text">TOC Removal (矿化率)</div>
+                <div class="toc-bar-bg">
+                    <div class="toc-bar-fill" id="toc-bar"></div>
+                </div>
+            </div>
+            <div class="stat-box">Level: <span id="level">1</span></div>
+        </div>
+
+        <div id="combo-display">CHAIN REACTION x2</div>
+
+        <div id="ultimate-btn" onclick="activateUltimate()">
+            <span>UV/O3</span>
+            <span style="font-size:12px">BURST</span>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <h1>AOPs: 矿化狂潮</h1>
+        <p>污染物（英文单词）正在入侵水体！<br>点击单词发射自由基将其降解。<br>连续点击触发<strong>链式反应 (Combo)</strong>。<br>记住爆炸后显示的中文释义！</p>
+        <button class="start-btn" onclick="startGame()">启动反应堆</button>
+    </div>
+
+    <script>
+        // --- 游戏数据 (精选 50 个核心词，可扩展) ---
+        const vocabData = [
+            { en: "Hydroxyl Radical", cn: "羟基自由基" },
+            { en: "Hydrogen Peroxide", cn: "过氧化氢" },
+            { en: "Ozone", cn: "臭氧" },
+            { en: "Photocatalysis", cn: "光催化" },
+            { en: "Fenton", cn: "芬顿反应" },
+            { en: "Mineralization", cn: "矿化" },
+            { en: "Degradation", cn: "降解" },
+            { en: "Catalyst", cn: "催化剂" },
+            { en: "Titanium Dioxide", cn: "二氧化钛" },
+            { en: "Semiconductor", cn: "半导体" },
+            { en: "Band Gap", cn: "带隙" },
+            { en: "Valence Band", cn: "价带" },
+            { en: "Conduction Band", cn: "导带" },
+            { en: "Electron", cn: "电子" },
+            { en: "Hole", cn: "空穴" },
+            { en: "Oxidation", cn: "氧化" },
+            { en: "Reduction", cn: "还原" },
+            { en: "Redox Potential", cn: "氧化还原电位" },
+            { en: "Kinetics", cn: "动力学" },
+            { en: "Rate Constant", cn: "速率常数" },
+            { en: "Activation Energy", cn: "活化能" },
+            { en: "Scavenger", cn: "清除剂" },
+            { en: "Intermediate", cn: "中间产物" },
+            { en: "By-product", cn: "副产物" },
+            { en: "Toxicity", cn: "毒性" },
+            { en: "Biodegradability", cn: "可生化性" },
+            { en: "Refractory", cn: "难降解的" },
+            { en: "Persistent", cn: "持久性的" },
+            { en: "UV/H2O2", cn: "紫外/双氧水" },
+            { en: "Ozonation", cn: "臭氧氧化" },
+            { en: "Sonolysis", cn: "声解/超声" },
+            { en: "Electrochemical", cn: "电化学" },
+            { en: "Plasma", cn: "等离子体" },
+            { en: "Supercritical", cn: "超临界" },
+            { en: "Heterogeneous", cn: "非均相" },
+            { en: "Homogeneous", cn: "均相" },
+            { en: "Adsorption", cn: "吸附" },
+            { en: "Surface Area", cn: "比表面积" },
+            { en: "Quantum Yield", cn: "量子产率" },
+            { en: "Mass Transfer", cn: "传质" },
+            { en: "COD", cn: "化学需氧量" },
+            { en: "TOC", cn: "总有机碳" },
+            { en: "BOD", cn: "生化需氧量" },
+            { en: "pH", cn: "酸碱度" },
+            { en: "Temperature", cn: "温度" },
+            { en: "Concentration", cn: "浓度" },
+            { en: "Efficiency", cn: "效率" },
+            { en: "Selectivity", cn: "选择性" },
+            { en: "Stability", cn: "稳定性" },
+            { en: "Regeneration", cn: "再生" }
+        ];
+
+        // --- 游戏引擎变量 ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let animationId;
+        let lastTime = 0;
+        let gameActive = false;
+        
+        // 游戏状态
+        let score = 0;
+        let tocProgress = 0; // 0 to 100
+        let level = 1;
+        let combo = 0;
+        let comboTimer = 0;
+        let ultimateCharge = 0; // 0 to 100
+        let spawnRate = 1500; // ms
+        let lastSpawn = 0;
+        let words = [];
+        let particles = [];
+        let floatingTexts = [];
+        let shakeIntensity = 0;
+
+        // 音频上下文
+        let audioCtx;
+
+        // 初始化画布
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- 类定义 ---
+
+        class Word {
+            constructor() {
+                this.data = vocabData[Math.floor(Math.random() * vocabData.length)];
+                this.x = Math.random() * (width - 200) + 100;
+                this.y = -50;
+                this.speed = (Math.random() * 1 + 0.5) * (1 + level * 0.2);
+                this.radius = 60;
+                this.color = '#00ffcc';
+                this.hit = false;
+            }
+
+            update(dt) {
+                this.y += this.speed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 发光效果
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                
+                // 背景圆
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 50, 50, 0.8)';
+                ctx.fill();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 文字
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // 自动换行逻辑简单处理
+                const words = this.data.en.split(' ');
+                if(words.length > 1) {
+                    ctx.fillText(words[0], 0, -10);
+                    ctx.fillText(words[1], 0, 10);
+                } else {
+                    ctx.fillText(this.data.en, 0, 0);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.03 + 0.02;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.2; // 重力
+                this.life -= this.decay;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        class FloatingText {
+            constructor(x, y, text, color) {
+                this.x = x;
+                this.y = y;
+                this.text = text;
+                this.color = color;
+                this.life = 1.0;
+                this.vy = -2;
+            }
+            update() {
+                this.y += this.vy;
+                this.life -= 0.02;
+            }
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.font = 'bold 20px Arial';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.strokeText(this.text, this.x, this.y);
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // --- 游戏逻辑 ---
+
+        function spawnWord() {
+            words.push(new Word());
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function showFloatingText(x, y, text, color) {
+            floatingTexts.push(new FloatingText(x, y, text, color));
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400 + Math.random() * 200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'combo') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'ultimate') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1);
+            }
+        }
+
+        function checkCombo() {
+            if (combo > 1) {
+                const comboEl = document.getElementById('combo-display');
+                comboEl.innerText = `CHAIN REACTION x${combo}`;
+                comboEl.style.opacity = 1;
+                comboEl.style.transform = 'translateX(-50%) scale(1.5)';
+                setTimeout(() => {
+                    comboEl.style.transform = 'translateX(-50%) scale(1)';
+                }, 100);
+                
+                if(combo % 5 === 0) playSound('combo');
+            } else {
+                document.getElementById('combo-display').style.opacity = 0;
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('level').innerText = level;
+            document.getElementById('toc-bar').style.width = tocProgress + '%';
+            
+            const ultBtn = document.getElementById('ultimate-btn');
+            if (ultimateCharge >= 100) {
+                ultBtn.classList.add('ready');
+                ultBtn.innerText = "READY";
+            } else {
+                ultBtn.classList.remove('ready');
+                ultBtn.innerHTML = `<span>${Math.floor(ultimateCharge)}%</span>`;
+            }
+        }
+
+        function activateUltimate() {
+            if (ultimateCharge < 100) return;
+            playSound('ultimate');
+            ultimateCharge = 0;
+            shakeIntensity = 20;
+            
+            // 清屏特效
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0,0,width,height);
+            
+            words.forEach(w => {
+                createExplosion(w.x, w.y, '#fff');
+                showFloatingText(w.x, w.y, "MINERALIZED!", "#fff");
+                score += 50;
+                tocProgress = Math.min(100, tocProgress + 5);
+            });
+            words = [];
+            updateUI();
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('overlay').style.display = 'flex';
+            document.querySelector('#overlay h1').innerText = "Reactors Failed!";
+            document.querySelector('#overlay p').innerHTML = `Final TOC Removal: ${Math.floor(tocProgress)}%<br>Score: ${score}<br>Level: ${level}`;
+            document.querySelector('.start-btn').innerText = "Restart System";
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameActive) return;
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // 清屏
+            ctx.fillStyle = 'rgba(5, 5, 16, 0.3)'; // 拖影效果
+            ctx.fillRect(0, 0, width, height);
+
+            // 屏幕震动
+            if (shakeIntensity > 0) {
+                ctx.save();
+                const dx = Math.random() * shakeIntensity - shakeIntensity / 2;
+                const dy = Math.random() * shakeIntensity - shakeIntensity / 2;
+                ctx.translate(dx, dy);
+                shakeIntensity *= 0.9;
+                if(shakeIntensity < 0.5) shakeIntensity = 0;
+            }
+
+            // 生成单词
+            if (timestamp - lastSpawn > spawnRate) {
+                spawnWord();
+                lastSpawn = timestamp;
+                // 难度递增
+                if (spawnRate > 600) spawnRate -= 10;
+            }
+
+            // 更新 Combo 计时器
+            if (combo > 0) {
+                comboTimer -= dt;
+                if (comboTimer <= 0) {
+                    combo = 0;
+                    checkCombo();
+                }
+            }
+
+            // 更新单词
+            for (let i = words.length - 1; i >= 0; i--) {
+                let w = words[i];
+                w.update(dt);
+                w.draw();
+
+                // 触底失败
+                if (w.y > height) {
+                    words.splice(i, 1);
+                    tocProgress = Math.max(0, tocProgress - 5); // 水质恶化
+                    shakeIntensity = 5;
+                    showFloatingText(w.x, height - 50, "LEAK!", "#ff0000");
+                    if (tocProgress <= 0) gameOver();
+                }
+            }
+
+            // 更新粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            // 更新浮动文字
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                let t = floatingTexts[i];
+                t.update();
+                t.draw();
+                if (t.life <= 0) floatingTexts.splice(i, 1);
+            }
+
+            // 恢复上下文
+            if (shakeIntensity > 0 || shakeIntensity === 0) { // 逻辑修正，只要之前 save 了就要 restore
+                 // 上面只在 shake>0 时 save 了，这里需要对应逻辑，简化起见，每帧不 restore 除非 save
+                 // 修正：上面 save 了，这里必须 restore
+                 if(shakeIntensity > 0.1 || ctx.getTransform().e !== 0) { 
+                     // 简单处理：如果震动过，恢复
+                     // 实际上上面的 save 是在 if 块里，所以 restore 也应在 if 块里或统一管理
+                     // 为了代码简洁，我们在震动逻辑里直接 restore
+                 }
+            }
+            if(shakeIntensity > 0.5) ctx.restore(); // 对应上面的 save
+
+            updateUI();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- 输入处理 ---
+
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // 防止双击缩放
+            const touch = e.touches[0];
+            handleInput({ clientX: touch.clientX, clientY: touch.clientY });
+        }, { passive: false });
+
+        function handleInput(e) {
+            if (!gameActive) return;
+            const x = e.clientX;
+            const y = e.clientY;
+
+            let hit = false;
+            // 倒序遍历，优先点击最上层的
+            for (let i = words.length - 1; i >= 0; i--) {
+                let w = words[i];
+                const dist = Math.hypot(w.x - x, w.y - y);
+                if (dist < w.radius) {
+                    // 击中
+                    hit = true;
+                    words.splice(i, 1);
+                    
+                    // 反馈
+                    combo++;
+                    comboTimer = 1500; // 1.5 秒内连续点击
+                    checkCombo();
+                    
+                    const multiplier = Math.min(5, Math.floor(combo / 3) + 1);
+                    const points = 10 * multiplier;
+                    score += points;
+                    
+                    tocProgress = Math.min(100, tocProgress + 2);
+                    ultimateCharge = Math.min(100, ultimateCharge + 5);
+                    
+                    createExplosion(w.x, w.y, w.color);
+                    showFloatingText(w.x, w.y - 30, `+${points}`, "#00ffcc");
+                    // 显示中文释义 (核心学习点)
+                    showFloatingText(w.x, w.y + 30, w.data.cn, "#ffff00");
+                    
+                    playSound('hit');
+                    
+                    if (tocProgress >= 100) {
+                        level++;
+                        tocProgress = 0;
+                        showFloatingText(width/2, height/2, "LEVEL UP!", "#00ffcc");
+                        shakeIntensity = 10;
+                        // 加速
+                        spawnRate = Math.max(400, spawnRate - 200);
+                    }
+                    break; // 一次只点一个
+                }
+            }
+            
+            if(!hit) {
+                // 点击空白处轻微惩罚或无反馈
+                combo = 0;
+                checkCombo();
+            }
+            updateUI();
+        }
+
+        function startGame() {
+            document.getElementById('overlay').style.display = 'none';
+            // 初始化音频
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            gameActive = true;
+            score = 0;
+            tocProgress = 0;
+            level = 1;
+            combo = 0;
+            ultimateCharge = 0;
+            words = [];
+            particles = [];
+            floatingTexts = [];
+            spawnRate = 1500;
+            lastTime = performance.now();
+            gameLoop(lastTime);
+        }
+
+    </script>
+</body>
+</html>
