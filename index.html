@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秦老师教学工具集 | Advanced Oxidation Technologies</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent-green: #059669;
+      --accent-orange: #d97706;
+      --accent-purple: #7c3aed;
+      --accent-red: #dc2626;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: #fff;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .header p { font-size: 15px; opacity: 0.85; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+    .header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .main { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      padding-left: 4px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.13);
+    }
+    .card-icon { font-size: 36px; margin-bottom: 4px; }
+    .card h3 { font-size: 16px; font-weight: 700; line-height: 1.3; }
+    .card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .card-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 2px 8px;
+      margin-top: auto;
+      align-self: flex-start;
+    }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-orange { background: #fef3c7; color: #92400e; }
+    .tag-purple { background: #ede9fe; color: #5b21b6; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+
+    .divider { height: 1px; background: #e5e7eb; margin: 8px 0 32px; }
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 480px) {
+      .header h1 { font-size: 22px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">🌏 全英文课程 · Advanced Oxidation Technologies</div>
+  <h1>秦老师教学工具集</h1>
+  <p>《高级氧化技术》本科全英文课程配套互动教学工具，涵盖反应机理、参数优化、词汇训练、实战设计等模块</p>
+</div>
+
+<div class="main">
+  <div class="section-title">📚 课程配套工具</div>
+  <div class="grid">
+    <a class="card" href="heterogeneous-reactions/">
+      <div class="card-icon">⚗️</div>
+      <h3>非均相高级氧化反应机理</h3>
+      <p>交互式机理教学，可视化催化表面反应过程与步骤</p>
+      <span class="card-tag tag-blue">机理教学</span>
+    </a>
+    <a class="card" href="iron-oxide-ros/">
+      <div class="card-icon">🧱</div>
+      <h3>铁氧化物晶型与 ROS 种类</h3>
+      <p>探索不同铁氧化物晶型对活性氧物种的调控机制</p>
+      <span class="card-tag tag-purple">晶型影响</span>
+    </a>
+    <a class="card" href="fenton-laboratory/">
+      <div class="card-icon">🧪</div>
+      <h3>芬顿反应参数优化实验室</h3>
+      <p>互动参数模拟实验，调节 pH、药剂投量、温度等变量</p>
+      <span class="card-tag tag-orange">参数优化</span>
+    </a>
+    <a class="card" href="fenton-workshop/">
+      <div class="card-icon">🏭</div>
+      <h3>化工废水芬顿处理方案设计</h3>
+      <p>实战工坊：输入废水参数，生成完整处理方案</p>
+      <span class="card-tag tag-red">实战设计</span>
+    </a>
+    <a class="card" href="aops-mineralization/">
+      <div class="card-icon">🌊</div>
+      <h3>矿化狂潮 · Mineralization Rush</h3>
+      <p>可视化污染物矿化过程，TOC 降解曲线实时绘制</p>
+      <span class="card-tag tag-green">矿化模拟</span>
+    </a>
+    <a class="card" href="vocabulary-challenge/">
+      <div class="card-icon">📖</div>
+      <h3>AOP 词汇通关手册</h3>
+      <p>闯关式词汇训练，巩固高级氧化核心专业术语</p>
+      <span class="card-tag tag-green">词汇训练</span>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">🗂️ 其他工具</div>
+  <div class="grid">
+    <a class="card" href="course-questionnaire/">
+      <div class="card-icon">📋</div>
+      <h3>课程前测与学习规划</h3>
+      <p>新生入学前测问卷，评估基础并生成个性化学习建议</p>
+      <span class="card-tag tag-blue">课程管理</span>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">📱 个人效率</div>
+  <div class="grid">
+    <a class="card" href="https://hpqin321.github.io/qin-daily-planner/" target="_blank">
+      <div class="card-icon">📋</div>
+      <h3>秦老师的备忘本</h3>
+      <p>日/周/月三视图计划工具，课程安排与个人事务管理</p>
+      <span class="card-tag tag-blue">日程管理 ↗</span>
+    </a>
+  </div>
+</div>
+
+<div class="footer">
+  秦老师《高级氧化技术》全英文课程 · Advanced Oxidation Technologies<br>
+  基于 GitHub Pages 托管 · 数据存储于本地浏览器
+</div>
+
+</body>
+</html>
