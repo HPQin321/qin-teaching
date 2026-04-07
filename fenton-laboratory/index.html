@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芬顿反应参数优化互动实验室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .lab-container {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 25px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 参数控制区 */
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-label span:first-child {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .control-label .value-display {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #00d4ff;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-pH::-webkit-slider-thumb {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        }
+
+        .slider-Fe::-webkit-slider-thumb {
+            background: linear-gradient(135deg, #ffa502, #ff7f00);
+        }
+
+        .slider-H2O2::-webkit-slider-thumb {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        /* 烧杯可视化 */
+        .beaker-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .beaker {
+            width: 180px;
+            height: 250px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .beaker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            width: 60%;
+            height: 15px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .solution {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: all 0.5s ease;
+        }
+
+        .solution-liquid {
+            height: calc(100% - var(--sludge-height));
+            background: linear-gradient(180deg, var(--solution-color) 0%, var(--solution-color-deep) 100%);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .solution-liquid::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: scaleY(0.3);
+        }
+
+        .sludge {
+            height: var(--sludge-height);
+            background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+            position: relative;
+            transition: height 0.5s ease;
+        }
+
+        .sludge::after {
+            content: 'Fe(OH)₃';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+        }
+
+        /* 动力学曲线 */
+        .kinetics-canvas {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kinetics-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .kinetics-info h4 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .kinetics-info p {
+            color: #a0a0a0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .kinetics-info .highlight {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        /* 指标显示 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-value.excellent {
+            color: #00b894;
+        }
+
+        .metric-value.good {
+            color: #00d4ff;
+        }
+
+        .metric-value.fair {
+            color: #ffa502;
+        }
+
+        .metric-value.poor {
+            color: #ff6b6b;
+        }
+
+        .metric-label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+        }
+
+        /* 提示信息 */
+        .tip-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .tip-box h4 {
+            color: #ffc107;
+            margin-bottom: 8px;
+        }
+
+        .tip-box p {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .tip-box.warning {
+            background: rgba(255, 107, 107, 0.1);
+            border-left-color: #ff6b6b;
+        }
+
+        .tip-box.warning h4 {
+            color: #ff6b6b;
+        }
+
+        .tip-box.success {
+            background: rgba(0, 184, 148, 0.1);
+            border-left-color: #00b894;
+        }
+
+        .tip-box.success h4 {
+            color: #00b894;
+        }
+
+        /* 比例指示器 */
+        .ratio-indicator {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .ratio-bar {
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .ratio-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffa502 0%, #00b894 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 0.85em;
+        }
+
+        .ratio-label {
+            display: flex;
+            justify-content: space-between;
+            color: #a0a0a0;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 1200px) {
+            .lab-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .lab-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 芬顿反应参数优化互动实验室</h1>
+        <p>通过调节参数，观察氧化效率和铁泥生成的实时变化，找出最佳操作条件</p>
+    </div>
+
+    <div class="lab-container">
+        <!-- 左侧参数控制区 -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>⚙️ 参数调节</span>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>pH 值</span>
+                    <span class="value-display" id="pH-value">3.0</span>
+                </div>
+                <input type="range" class="slider slider-pH" id="pH-slider" min="1.5" max="7.0" step="0.1" value="3.0">
+                <p style="color: #a0a0a0; font-size: 0.85em; margin-top: 8px;">最佳范围：2.5-3.5</p>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Fe²⁺ 浓度 (mM)</span>
+                    <span class="value-display" id="Fe-value">1.0</span>
+                </div>
+                <input type="range" class="slider slider-Fe" id="Fe-slider" min="0.1" max="5.0" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>H₂O₂ 浓度 (mM)</span>
+                    <span class="value-display" id="H2O2-value">3.0</span>
+                </div>
+                <input type="range" class="slider slider-H2O2" id="H2O2-slider" min="0.5" max="15.0" step="0.5" value="3.0">
+            </div>
+
+            <div class="ratio-indicator">
+                <div class="ratio-label">
+                    <span>H₂O₂ / Fe²⁺ 摩尔比</span>
+                    <span id="ratio-value">3.0:1</span>
+                </div>
+                <div class="ratio-bar">
+                    <div class="ratio-fill" id="ratio-fill" style="width: 50%;">3.0:1</div>
+                </div>
+                <p style="color: #a0a0a0; font-size: 0.85em;">黄金比例：2.5-3.5:1</p>
+            </div>
+
+            <div id="tip-container"></div>
+        </div>
+
+        <!-- 中间可视化区 -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>🔬 反应烧杯</span>
+            </div>
+
+            <div class="beaker-container">
+                <div class="beaker" id="beaker">
+                    <div class="solution" id="solution">
+                        <div class="solution-liquid" id="solution-liquid"></div>
+                        <div class="sludge" id="sludge"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">降解效率 (30min)</div>
+                    <div class="metric-value" id="degradation-efficiency">85%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">铁泥生成量</div>
+                    <div class="metric-value" id="sludge-amount">低</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">反应速率常数 k</div>
+                    <div class="metric-value" id="rate-constant">0.28</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">·OH 产率</div>
+                    <div class="metric-value" id="oh-yield">高</div>
+                </div>
+            </div>
+
+            <div class="kinetics-info">
+                <h4>📊 动力学分析</h4>
+                <p id="kinetics-description">当前参数配置下，芬顿反应具有较高的氧化效率。</p>
+            </div>
+        </div>
+
+        <!-- 右侧曲线图区 -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>📈 动力学曲线</span>
+            </div>
+
+            <div class="kinetics-canvas">
+                <canvas id="kinetics-chart"></canvas>
+            </div>
+
+            <div class="kinetics-info" style="margin-top: 20px;">
+                <h4>🎯 实验任务</h4>
+                <p>1. 调整 H₂O₂/Fe²⁺ 摩尔比，观察降解速率变化</p>
+                <p>2. 将 pH 调至 4.0 以上，观察铁泥生成情况</p>
+                <p>3. 找出降解效率最高的"黄金比例"</p>
+                <p>4. 对比不同 pH 条件下的降解效果</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const pHSlider = document.getElementById('pH-slider');
+        const FeSlider = document.getElementById('Fe-slider');
+        const H2O2Slider = document.getElementById('H2O2-slider');
+
+        const pHValue = document.getElementById('pH-value');
+        const FeValue = document.getElementById('Fe-value');
+        const H2O2Value = document.getElementById('H2O2-value');
+
+        const ratioValue = document.getElementById('ratio-value');
+        const ratioFill = document.getElementById('ratio-fill');
+
+        const beaker = document.getElementById('beaker');
+        const solution = document.getElementById('solution');
+        const solutionLiquid = document.getElementById('solution-liquid');
+        const sludge = document.getElementById('sludge');
+
+        const degradationEfficiency = document.getElementById('degradation-efficiency');
+        const sludgeAmount = document.getElementById('sludge-amount');
+        const rateConstant = document.getElementById('rate-constant');
+        const ohYield = document.getElementById('oh-yield');
+        const kineticsDescription = document.getElementById('kinetics-description');
+        const tipContainer = document.getElementById('tip-container');
+
+        const canvas = document.getElementById('kinetics-chart');
+        const ctx = canvas.getContext('2d');
+
+        // 初始化画布
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        // 计算反应参数
+        function calculateReactionParams() {
+            const pH = parseFloat(pHSlider.value);
+            const Fe = parseFloat(FeSlider.value);
+            const H2O2 = parseFloat(H2O2Slider.value);
+            const ratio = H2O2 / Fe;
+
+            // pH 影响因子 (最佳 pH 2.5-3.5)
+            let pHFactor;
+            if (pH < 2.0) {
+                pHFactor = 0.5 + (pH - 1.5) * 0.4; // pH 过低，效率下降
+            } else if (pH >= 2.0 && pH <= 3.5) {
+                pHFactor = 1.0; // 最佳范围
+            } else if (pH > 3.5 && pH <= 4.5) {
+                pHFactor = 1.0 - (pH - 3.5) * 0.3; // 开始下降
+            } else {
+                pHFactor = 0.7 - (pH - 4.5) * 0.15; // 显著下降
+            }
+            pHFactor = Math.max(0.1, Math.min(1.0, pHFactor));
+
+            // 摩尔比影响因子 (最佳 2.5-3.5:1)
+            let ratioFactor;
+            if (ratio < 1.5) {
+                ratioFactor = 0.4 + (ratio - 1.0) * 0.4; // 比例过低
+            } else if (ratio >= 1.5 && ratio <= 3.5) {
+                ratioFactor = 0.8 + (ratio - 1.5) * 0.1; // 最佳范围附近
+                ratioFactor = Math.min(1.0, ratioFactor);
+            } else if (ratio > 3.5 && ratio <= 5.0) {
+                ratioFactor = 1.0 - (ratio - 3.5) * 0.25; // 过量 H2O2 清除 ·OH
+            } else {
+                ratioFactor = 0.625 - (ratio - 5.0) * 0.15; // 严重过量
+            }
+            ratioFactor = Math.max(0.1, Math.min(1.0, ratioFactor));
+
+            // 铁泥生成量
+            let sludgeHeight;
+            if (pH < 3.0) {
+                sludgeHeight = 5 + (pH - 1.5) * 2; // 低 pH，铁泥少
+            } else if (pH >= 3.0 && pH <= 4.0) {
+                sludgeHeight = 8 + (pH - 3.0) * 20; // 开始显著增加
+            } else {
+                sludgeHeight = 28 + (pH - 4.0) * 25; // 快速沉淀
+            }
+            sludgeHeight = Math.min(120, sludgeHeight);
+
+            // 降解效率
+            const baseEfficiency = 90;
+            const efficiency = baseEfficiency * pHFactor * ratioFactor;
+
+            // 反应速率常数
+            const baseK = 0.3;
+            const k = baseK * pHFactor * ratioFactor;
+
+            // ·OH 产率
+            const ohYieldValue = pHFactor * ratioFactor;
+
+            // 溶液颜色
+            let solutionColor;
+            if (pH < 3.0) {
+                solutionColor = 'rgba(255, 140, 0, 0.6)'; // 橙色，Fe²+
+                solutionColorDeep = 'rgba(184, 134, 11, 0.8)';
+            } else if (pH >= 3.0 && pH <= 4.0) {
+                solutionColor = 'rgba(139, 69, 19, 0.5)'; // 变浑浊
+                solutionColorDeep = 'rgba(160, 82, 45, 0.7)';
+            } else {
+                solutionColor = 'rgba(139, 69, 19, 0.4)'; // 浑浊
+                solutionColorDeep = 'rgba(101, 67, 33, 0.6)';
+            }
+
+            return {
+                pH, Fe, H2O2, ratio,
+                pHFactor, ratioFactor,
+                sludgeHeight,
+                efficiency,
+                k,
+                ohYieldValue,
+                solutionColor,
+                solutionColorDeep
+            };
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            const params = calculateReactionParams();
+
+            // 更新数值显示
+            pHValue.textContent = params.pH.toFixed(1);
+            FeValue.textContent = params.Fe.toFixed(1);
+            H2O2Value.textContent = params.H2O2.toFixed(1);
+            ratioValue.textContent = params.ratio.toFixed(1) + ':1';
+            ratioFill.style.width = Math.min(100, (params.ratio / 6) * 100) + '%';
+            ratioFill.textContent = params.ratio.toFixed(1) + ':1';
+
+            // 更新烧杯
+            solution.style.setProperty('--sludge-height', params.sludgeHeight + 'px');
+            solutionLiquid.style.setProperty('--solution-color', params.solutionColor);
+            solutionLiquid.style.setProperty('--solution-color-deep', params.solutionColorDeep);
+
+            // 更新指标
+            degradationEfficiency.textContent = params.efficiency.toFixed(0) + '%';
+            degradationEfficiency.className = 'metric-value ' + getEfficiencyClass(params.efficiency);
+
+            sludgeAmount.textContent = getSludgeLevel(params.sludgeHeight);
+            sludgeAmount.className = 'metric-value ' + getSludgeClass(params.sludgeHeight);
+
+            rateConstant.textContent = params.k.toFixed(3);
+            rateConstant.className = 'metric-value ' + getKClass(params.k);
+
+            ohYield.textContent = getOHYieldLevel(params.ohYieldValue);
+            ohYield.className = 'metric-value ' + getOHYieldClass(params.ohYieldValue);
+
+            // 更新描述
+            updateKineticsDescription(params);
+            updateTipBox(params);
+
+            // 更新曲线
+            drawKineticsChart(params);
+        }
+
+        function getEfficiencyClass(efficiency) {
+            if (efficiency >= 80) return 'excellent';
+            if (efficiency >= 60) return 'good';
+            if (efficiency >= 40) return 'fair';
+            return 'poor';
+        }
+
+        function getSludgeLevel(height) {
+            if (height < 15) return '低';
+            if (height < 40) return '中等';
+            if (height < 80) return '较高';
+            return '严重';
+        }
+
+        function getSludgeClass(height) {
+            if (height < 15) return 'excellent';
+            if (height < 40) return 'good';
+            if (height < 80) return 'fair';
+            return 'poor';
+        }
+
+        function getKClass(k) {
+            if (k >= 0.25) return 'excellent';
+            if (k >= 0.18) return 'good';
+            if (k >= 0.10) return 'fair';
+            return 'poor';
+        }
+
+        function getOHYieldLevel(value) {
+            if (value >= 0.8) return '高';
+            if (value >= 0.5) return '中等';
+            return '低';
+        }
+
+        function getOHYieldClass(value) {
+            if (value >= 0.8) return 'excellent';
+            if (value >= 0.5) return 'good';
+            return 'fair';
+        }
+
+        function updateKineticsDescription(params) {
+            let desc = '';
+
+            if (params.pH >= 2.5 && params.pH <= 3.5 && params.ratio >= 2.5 && params.ratio <= 3.5) {
+                desc = '🎉 完美！当前处于最佳反应条件，pH和摩尔比都在黄金范围内，降解效率达到峰值。';
+            } else if (params.pH > 4.0) {
+                desc = '⚠️ pH过高导致Fe²⁺水解沉淀，催化剂失活，建议将pH调至2.5-3.5范围内。';
+            } else if (params.pH < 2.0) {
+                desc = '⚠️ pH过低，·OH被质子化清除，且铁离子以络合物形式存在，活性降低。';
+            } else if (params.ratio < 1.5) {
+                desc = '⚠️ H2O2不足，无法产生足够的·OH，建议增加H2O2浓度。';
+            } else if (params.ratio > 5.0) {
+                desc = '⚠️ H2O2过量，成为·OH清除剂（H2O2 + ·OH → HO2· + H2O），反而降低氧化效率。';
+            } else {
+                desc = '当前参数可以正常运行，但未达到最优状态。尝试微调pH和摩尔比以获得更好的降解效果。';
+            }
+
+            kineticsDescription.textContent = desc;
+        }
+
+        function updateTipBox(params) {
+            let tipHTML = '';
+            let tipClass = '';
+            let tipTitle = '';
+
+            if (params.pH > 4.0) {
+                tipClass = 'warning';
+                tipTitle = '🚨 铁泥警报';
+                tipHTML = `<p>pH ${params.pH.toFixed(1)} 已超过临界值4.0，Fe²⁺迅速水解生成Fe(OH)₃沉淀。这不仅消耗催化剂，还会产生大量铁泥，增加后续处理成本。</p>`;
+            } else if (params.ratio >= 2.5 && params.ratio <= 3.5 && params.pH >= 2.5 && params.pH <= 3.5) {
+                tipClass = 'success';
+                tipTitle = '✨ 黄金比例';
+                tipHTML = `<p>恭喜！你找到了芬顿反应的最佳参数组合：pH ${params.pH.toFixed(1)}，H2O2/Fe²⁺ = ${params.ratio.toFixed(1)}:1。这是工业应用中最理想的操作条件。</p>`;
+            } else if (params.ratio < 2.0) {
+                tipClass = 'warning';
+                tipTitle = '💡 比例建议';
+                tipHTML = `<p>当前摩尔比 ${params.ratio.toFixed(1)}:1 偏低，建议增加H2O2浓度至2.5-3.5倍Fe²⁺浓度，以获得最佳降解效果。</p>`;
+            } else if (params.ratio > 5.0) {
+                tipClass = 'warning';
+                tipTitle = '💡 过量警报';
+                tipHTML = `<p>H2O2过量不仅浪费药剂，还会清除·OH自由基。建议降低H2O2浓度至黄金比例范围。</p>`;
+            } else {
+                tipClass = '';
+                tipTitle = '💡 实验提示';
+                tipHTML = `<p>尝试调节参数：将pH控制在2.5-3.5，H2O2/Fe²⁺比例控制在2.5-3.5:1，观察降解效率的变化。</p>`;
+            }
+
+            tipContainer.innerHTML = `<div class="tip-box ${tipClass}"><h4>${tipTitle}</h4>${tipHTML}</div>`;
+        }
+
+        // 绘制动力学曲线
+        function drawKineticsChart(params) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = { top: 30, right: 30, bottom: 50, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 绘制背景网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+
+            // 横向网格
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+
+                // Y轴标签
+                ctx.fillStyle = '#a0a0a0';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText((100 - i * 20).toString() + '%', padding.left - 10, y + 4);
+            }
+
+            // 纵向网格
+            for (let i = 0; i <= 6; i++) {
+                const x = padding.left + (chartWidth / 6) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, padding.top);
+                ctx.lineTo(x, height - padding.bottom);
+                ctx.stroke();
+
+                // X轴标签
+                ctx.fillStyle = '#a0a0a0';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText((i * 5).toString() + 'min', x, height - padding.bottom + 20);
+            }
+
+            // 轴标题
+            ctx.fillStyle = '#00d4ff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('反应时间 (min)', padding.left + chartWidth / 2, height - 10);
+
+            ctx.save();
+            ctx.translate(15, padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('有机物去除率 (%)', 0, 0);
+            ctx.restore();
+
+            // 计算并绘制曲线
+            ctx.beginPath();
+            ctx.moveTo(padding.left, height - padding.bottom);
+
+            const points = [];
+            for (let t = 0; t <= 30; t++) {
+                // 使用伪一级动力学方程
+                const removalRate = params.efficiency * (1 - Math.exp(-params.k * t));
+                const x = padding.left + (t / 30) * chartWidth;
+                const y = height - padding.bottom - (removalRate / 100) * chartHeight;
+                points.push({ x, y });
+            }
+
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+
+            // 绘制曲线
+            const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+            gradient.addColorStop(0, getCurveColor(params.efficiency));
+            gradient.addColorStop(1, 'rgba(0, 212, 255, 0.1)');
+
+            ctx.strokeStyle = getCurveColor(params.efficiency);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 填充区域
+            ctx.lineTo(points[points.length - 1].x, height - padding.bottom);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // 绘制数据点
+            for (let i = 0; i < points.length; i += 6) {
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = getCurveColor(params.efficiency);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // 显示最终去除率
+            const finalPoint = points[points.length - 1];
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${params.efficiency.toFixed(0)}%`, finalPoint.x + 10, finalPoint.y);
+        }
+
+        function getCurveColor(efficiency) {
+            if (efficiency >= 80) return '#00b894';
+            if (efficiency >= 60) return '#00d4ff';
+            if (efficiency >= 40) return '#ffa502';
+            return '#ff6b6b';
+        }
+
+        // 事件监听
+        pHSlider.addEventListener('input', updateDisplay);
+        FeSlider.addEventListener('input', updateDisplay);
+        H2O2Slider.addEventListener('input', updateDisplay);
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            updateDisplay();
+        });
+
+        // 初始化
+        initCanvas();
+        updateDisplay();
+    </script>
+</body>
+</html>
