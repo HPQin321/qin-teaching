@@ -1,0 +1,899 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Security-Policy" content="frame-src https://processon.com https://*.processon.com; child-src https://processon.com https://*.processon.com; object-src 'none'">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fenton 法降解亚甲基蓝 · 交互式虚拟实验</title>
+<style>
+  :root{
+    --bg:#F7F8FF; --card:#FFFFFF; --ink:#1F2433; --ink-soft:#5A6072;
+    --primary:#5B6CFF; --primary-deep:#3D4FD1; --yellow:#FFD166;
+    --pink:#FF7AB6; --green:#55C59D; --line:#E3E7F5;
+    --mb-blue:#1A4EC4; --fe-yellow:#D4AF37;
+    --radius:18px; --shadow:0 6px 24px rgba(61,79,209,.08);
+    --shadow-lift:0 12px 32px rgba(61,79,209,.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Nunito","Avenir Rounded","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.65; overflow-x:hidden;
+  }
+  h1{font-size:clamp(1.5rem,3.5vw,2.1rem); line-height:1.3; margin:.2em 0;}
+  h2{font-size:1.3rem; margin:0 0 .4em;}
+  h3{font-size:1.05rem; margin:0 0 .4em;}
+  p{margin:.4em 0;}
+  button{font-family:inherit; cursor:pointer;}
+  button:focus-visible, input:focus-visible, a:focus-visible{
+    outline:3px solid var(--primary); outline-offset:2px; border-radius:6px;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px 60px;}
+
+  /* ---------- 头部 ---------- */
+  header.hero{
+    background:linear-gradient(135deg,#5B6CFF 0%,#7B88FF 55%,#9AA6FF 100%);
+    color:#fff; padding:38px 20px 34px; border-radius:0 0 28px 28px;
+  }
+  header.hero .wrap{padding-bottom:0;}
+  .hero p.sub{margin:.5em 0 0; opacity:.94; max-width:60em;}
+  .tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
+  .tag{
+    background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35);
+    color:#fff; font-size:.82rem; padding:4px 12px; border-radius:999px;
+  }
+  .hero-note{margin-top:14px; font-size:.86rem; background:rgba(255,209,102,.2);
+    border:1px solid rgba(255,209,102,.55); border-radius:12px; padding:8px 14px; display:inline-block;}
+
+  /* ---------- 模式切换 ---------- */
+  .modebar{
+    display:flex; gap:10px; margin:26px 0 18px; flex-wrap:wrap;
+  }
+  .modebar button{
+    border:2px solid var(--line); background:var(--card); color:var(--ink-soft);
+    font-size:1rem; font-weight:700; padding:10px 22px; border-radius:999px;
+    transition:all .15s ease;
+  }
+  .modebar button[aria-selected="true"]{
+    background:var(--primary); border-color:var(--primary); color:#fff;
+    box-shadow:0 6px 16px rgba(91,108,255,.35);
+  }
+
+  /* ---------- 卡片 ---------- */
+  .card{
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:22px; transition:box-shadow .2s ease, transform .2s ease;
+  }
+  .card:hover{box-shadow:var(--shadow-lift);}
+  section{margin-top:22px;}
+  .card h2 .pill{font-size:.72rem; vertical-align:middle; margin-left:8px;}
+  .pill{
+    display:inline-block; background:#EEF0FF; color:var(--primary-deep);
+    border-radius:999px; padding:2px 10px; font-size:.75rem; font-weight:700;
+  }
+  .pill.green{background:#E4F7EF; color:#1E8A63;}
+  .pill.yellow{background:#FFF4D6; color:#8A6A1E;}
+
+  /* ---------- 探索模式布局 ---------- */
+  .explore-grid{display:grid; grid-template-columns:minmax(280px,380px) 1fr; gap:20px;}
+  .beaker-stage{display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .beaker-stage svg{width:min(240px,70vw); height:auto;}
+  .status-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%;}
+  .stat{
+    background:#F2F4FE; border-radius:12px; padding:8px 12px; text-align:center;
+  }
+  .stat .k{font-size:.75rem; color:var(--ink-soft);}
+  .stat .v{font-size:1.15rem; font-weight:800; font-variant-numeric:tabular-nums;}
+  .stat.hl .v{color:var(--primary-deep);}
+
+  .ctrl-group{margin-bottom:18px;}
+  .ctrl-group label{display:flex; justify-content:space-between; font-weight:700; font-size:.95rem;}
+  .ctrl-group output{color:var(--primary-deep); font-variant-numeric:tabular-nums;}
+  .ctrl-group .hint{font-size:.78rem; color:var(--ink-soft); font-weight:400;}
+  input[type="range"]{width:100%; accent-color:var(--primary); height:28px;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
+  .btn{
+    border:none; border-radius:12px; padding:10px 20px; font-size:.95rem; font-weight:800;
+    background:var(--primary); color:#fff; transition:transform .12s ease, background .12s ease;
+  }
+  .btn:hover{background:var(--primary-deep); transform:translateY(-2px);}
+  .btn.ghost{background:#EEF0FF; color:var(--primary-deep);}
+  .btn.ghost:hover{background:#E0E4FF;}
+  .btn.warn{background:var(--pink);}
+  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+  .speed-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0 4px;}
+  .speed-row span{font-size:.85rem; font-weight:700; color:var(--ink-soft);}
+  .speed-row button{
+    border:2px solid var(--line); background:#fff; border-radius:10px;
+    padding:4px 12px; font-weight:800; font-size:.85rem; color:var(--ink-soft);
+  }
+  .speed-row button.on{background:var(--yellow); border-color:var(--yellow); color:#5C4400;}
+  .predict{
+    margin-top:14px; background:#F0FBF6; border:1px solid #BDE7D5; border-radius:12px;
+    padding:10px 14px; font-size:.9rem;
+  }
+  .predict strong{color:#1E8A63;}
+  .predict.warnbox{background:#FFF7E6; border-color:#F0D89A;}
+  .predict.warnbox strong{color:#8A6A1E;}
+
+  .curve-card{margin-top:20px;}
+  .curve-card canvas{width:100%; height:300px; display:block;}
+  .curve-legend{font-size:.82rem; color:var(--ink-soft); margin-top:6px;}
+
+  /* ---------- 梯度实验 ---------- */
+  .tabbar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .tabbar button{
+    border:2px solid var(--line); background:#fff; color:var(--ink-soft);
+    padding:8px 16px; border-radius:12px; font-weight:800; font-size:.9rem;
+  }
+  .tabbar button[aria-selected="true"]{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .bench{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin:8px 0 16px;}
+  .mini-beaker{display:flex; flex-direction:column; align-items:center; gap:4px; width:118px;}
+  .mini-beaker svg{width:96px; height:auto;}
+  .mini-beaker .lbl{font-size:.75rem; color:var(--ink-soft); text-align:center; line-height:1.35;}
+  .mini-beaker .t90{
+    font-size:.75rem; font-weight:800; color:#1E8A63; background:#E4F7EF;
+    border-radius:999px; padding:1px 10px; min-height:1.2em; visibility:hidden;
+  }
+  .mini-beaker .t90.show{visibility:visible;}
+  .table-scroll{overflow-x:auto; border-radius:12px; border:1px solid var(--line);}
+  table{border-collapse:collapse; width:100%; font-size:.88rem; background:#fff;}
+  caption{text-align:left; font-weight:800; padding:10px 12px; background:#F2F4FE; font-size:.9rem;}
+  th, td{border:1px solid var(--line); padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  thead th{background:#EEF0FF; color:var(--primary-deep); white-space:nowrap;}
+  td.filled{color:#1E8A63; font-weight:800;}
+
+  /* ---------- 机理与安全 ---------- */
+  .eq-list{list-style:none; padding:0; margin:0; display:grid; gap:6px;}
+  .eq-list li{
+    background:#F2F4FE; border-radius:10px; padding:8px 14px;
+    font-family:"Times New Roman",serif; font-size:1.02rem;
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .eq-list .no{color:var(--ink-soft); font-family:inherit; font-size:.85rem;}
+  .note-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin-top:14px;}
+  .note-card{background:#F2F4FE; border-radius:14px; padding:14px 16px;}
+  .note-card h3{color:var(--primary-deep);}
+  .safe-list{margin:0; padding-left:1.2em;}
+  .safe-list li{margin:.45em 0;}
+  .disclaimer{
+    margin-top:18px; font-size:.82rem; color:var(--ink-soft);
+    background:#FFF7E6; border:1px solid #F0D89A; border-radius:12px; padding:10px 14px;
+  }
+
+  footer{margin-top:36px; text-align:center; color:var(--ink-soft); font-size:.82rem;}
+
+  /* ---------- SVG 动画 ---------- */
+  .bub{opacity:0;}
+  svg.reacting .bub{opacity:.55; animation:rise 1.6s linear infinite;}
+  svg.reacting .bub.b2{animation-delay:.4s;}
+  svg.reacting .bub.b3{animation-delay:.8s;}
+  svg.reacting .bub.b4{animation-delay:1.2s;}
+  @keyframes rise{
+    0%{transform:translateY(0); opacity:0;}
+    15%{opacity:.6;}
+    100%{transform:translateY(-58px); opacity:0;}
+  }
+  .floc{opacity:0; transition:opacity .5s;}
+  svg.flocs .floc{opacity:.85;}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:860px){
+    .explore-grid{grid-template-columns:1fr;}
+    .status-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:560px){
+    .bench{gap:8px;}
+    .mini-beaker{width:calc(33% - 8px);}
+    .card{padding:16px;}
+  }
+
+  /* ---------- 减少动效偏好 ---------- */
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *, *::before, *::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+    svg.reacting .bub{animation:none; opacity:.4;}
+  }
+
+  /* ---------- 打印 ---------- */
+  @media print{
+    body{background:#fff;}
+    header.hero{background:#fff; color:#000; border-bottom:2px solid #000; border-radius:0;}
+    .tag{border-color:#999; color:#333;}
+    .modebar, .btn-row, .speed-row, input[type="range"], .no-print{display:none !important;}
+    .card{box-shadow:none; border:1px solid #ccc; break-inside:avoid;}
+    .curve-card{display:none;}
+    [hidden]{display:block !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Fenton 法降解亚甲基蓝 · 交互式虚拟实验</h1>
+    <p class="sub">配套《Fenton 法降解亚甲基蓝实验讲义（2026 年 9 月修订版）》。拖动滑块改变 Fe²⁺、H₂O₂ 投加量与起始 pH，实时观察烧杯中亚甲基蓝蓝色褪去的过程——最佳条件附近的脱色时间设计为约 10 秒，与课堂实验一致。</p>
+    <div class="tags" aria-label="知识点">
+      <span class="tag">高级氧化技术</span>
+      <span class="tag">羟基自由基 HO·</span>
+      <span class="tag">反应动力学</span>
+      <span class="tag">Fe²⁺ / H₂O₂ 配比</span>
+      <span class="tag">pH 影响</span>
+    </div>
+    <p class="hero-note">课前预习建议：先在「自由探索」中理解单个参数的作用，再进入「梯度实验」完整跑一遍讲义表 3～表 5，带着预测结果进实验室。</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <nav class="modebar" aria-label="实验模式选择">
+    <button type="button" id="mode-explore-btn" aria-selected="true">① 自由探索（单烧杯）</button>
+    <button type="button" id="mode-gradient-btn" aria-selected="false">② 梯度实验（对应讲义表 3～5）</button>
+  </nav>
+
+  <!-- ============ 自由探索模式 ============ -->
+  <section id="mode-explore" aria-label="自由探索模式">
+    <div class="explore-grid">
+      <div class="card beaker-stage">
+        <h2>反应烧杯 <span class="pill">100 mL 体系</span></h2>
+        <div id="explore-beaker"></div>
+        <div class="status-grid" aria-live="polite">
+          <div class="stat"><div class="k">反应时间</div><div class="v" id="st-time">0.0 s</div></div>
+          <div class="stat"><div class="k">MB 剩余</div><div class="v" id="st-mb">100%</div></div>
+          <div class="stat"><div class="k">脱色率 η</div><div class="v" id="st-eta">0%</div></div>
+          <div class="stat hl"><div class="k">脱色时间（褪去 90%）</div><div class="v" id="st-t90">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>参数控制</h2>
+        <div class="ctrl-group">
+          <label for="in-fe">Fe²⁺ 母液加入量 <output id="out-fe">2.0 mL · c(Fe²⁺) = 0.20 mmol/L</output></label>
+          <input type="range" id="in-fe" min="0.5" max="3" step="0.1" value="2">
+          <div class="hint">10 mmol/L FeSO₄·7H₂O 母液，移液加入 100 mL 亚甲基蓝操作液（50 mg/L）</div>
+        </div>
+        <div class="ctrl-group">
+          <label for="in-h2o2">H₂O₂ 工作液加入量 <output id="out-h2o2">3.0 mL · c(H₂O₂) = 3.0 mmol/L</output></label>
+          <input type="range" id="in-h2o2" min="0.5" max="5" step="0.1" value="3">
+          <div class="hint">0.10 mol/L H₂O₂ 工作液（30% 储备液稀释约 98 倍）</div>
+        </div>
+        <div class="ctrl-group">
+          <label for="in-ph">起始 pH <output id="out-ph">3.0</output></label>
+          <input type="range" id="in-ph" min="3" max="8" step="0.5" value="3">
+          <div class="hint">用 1 mol/L H₂SO₄ / NaOH 调节，加药前完成</div>
+        </div>
+        <div class="ctrl-group">
+          <label for="in-temp">反应温度 <output id="out-temp">25 ℃</output></label>
+          <input type="range" id="in-temp" min="15" max="35" step="1" value="25">
+          <div class="hint">温度每升高约 10 ℃，反应速率约加快 1 倍</div>
+        </div>
+
+        <div class="speed-row" aria-label="模拟速度">
+          <span>模拟速度</span>
+          <button type="button" data-speed="1" class="on">1×</button>
+          <button type="button" data-speed="5">5×</button>
+          <button type="button" data-speed="20">20×</button>
+          <button type="button" data-speed="100">100×</button>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn" id="btn-start">开始反应</button>
+          <button type="button" class="btn ghost" id="btn-reset">重置</button>
+          <button type="button" class="btn ghost" id="btn-preset">讲义推荐条件</button>
+        </div>
+
+        <div class="predict" id="predict-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="card curve-card">
+      <h2>MB 浓度—时间曲线</h2>
+      <canvas id="curve" role="img" aria-label="亚甲基蓝剩余百分比随反应时间变化的曲线"></canvas>
+      <p class="curve-legend">纵轴：MB 剩余百分比（%）；横轴：反应时间（s）。竖虚线为脱色时间（MB 褪去 90%，对应肉眼刚好观察不到蓝色的时刻）。</p>
+    </div>
+  </section>
+
+  <!-- ============ 梯度实验模式 ============ -->
+  <section id="mode-gradient" aria-label="梯度实验模式" hidden="">
+    <div class="card">
+      <h2>梯度实验 <span class="pill green">与讲义表 3～5 一一对应</span></h2>
+      <p>五只烧杯并行反应。点击「开始反应」观察脱色过程；点击「快进到 30 min」直接计算各组最终脱色率并填入下表。模拟结果可作为课堂实测的预测参照。</p>
+
+      <div class="tabbar" role="tablist" aria-label="选择梯度实验">
+        <button type="button" role="tab" id="tab-g3" aria-selected="true" aria-controls="pane-g3" data-pane="g3">实验三 · Fe²⁺ 梯度</button>
+        <button type="button" role="tab" id="tab-g4" aria-selected="false" aria-controls="pane-g4" data-pane="g4">实验四 · H₂O₂ 梯度</button>
+        <button type="button" role="tab" id="tab-g5" aria-selected="false" aria-controls="pane-g5" data-pane="g5">实验五 · pH 梯度</button>
+      </div>
+
+      <div class="speed-row" aria-label="模拟速度">
+        <span>模拟速度</span>
+        <button type="button" data-gspeed="1" class="on">1×</button>
+        <button type="button" data-gspeed="5">5×</button>
+        <button type="button" data-gspeed="20">20×</button>
+        <button type="button" data-gspeed="100">100×</button>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn" id="btn-gstart">开始反应</button>
+        <button type="button" class="btn warn" id="btn-gfast">快进到 30 min</button>
+        <button type="button" class="btn ghost" id="btn-greset">重置本组</button>
+        <button type="button" class="btn ghost no-print" id="btn-gcopy">复制结果（可粘贴到 Word/Excel）</button>
+      </div>
+
+      <div id="pane-g3" role="tabpanel" aria-labelledby="tab-g3">
+        <div class="bench" id="bench-g3"></div>
+        <div class="table-scroll">
+          <table id="table-g3">
+            <caption>表 3　Fe²⁺ 投加量梯度（H₂O₂ 固定 3.0 mmol/L，pH 3.0，25 ℃）——模拟记录</caption>
+            <thead><tr>
+              <th scope="col">编号</th><th scope="col">Fe²⁺ 母液加入量 (mL)</th><th scope="col">c(Fe²⁺) (mmol/L)</th>
+              <th scope="col">H₂O₂ 工作液 (mL)</th><th scope="col">脱色时间 t (s)</th><th scope="col">30 min 脱色率 η (%)</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="pane-g4" role="tabpanel" aria-labelledby="tab-g4" hidden="">
+        <div class="bench" id="bench-g4"></div>
+        <div class="table-scroll">
+          <table id="table-g4">
+            <caption>表 4　H₂O₂ 投加量梯度（Fe²⁺ 固定 0.20 mmol/L，pH 3.0，25 ℃）——模拟记录</caption>
+            <thead><tr>
+              <th scope="col">编号</th><th scope="col">H₂O₂ 工作液加入量 (mL)</th><th scope="col">c(H₂O₂) (mmol/L)</th>
+              <th scope="col">Fe²⁺ 母液 (mL)</th><th scope="col">脱色时间 t (s)</th><th scope="col">30 min 脱色率 η (%)</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="pane-g5" role="tabpanel" aria-labelledby="tab-g5" hidden="">
+        <div class="bench" id="bench-g5"></div>
+        <div class="table-scroll">
+          <table id="table-g5">
+            <caption>表 5　起始 pH 影响（Fe²⁺ 0.20 mmol/L + H₂O₂ 3.0 mmol/L，25 ℃）——模拟记录</caption>
+            <thead><tr>
+              <th scope="col">编号</th><th scope="col">起始 pH</th><th scope="col">脱色时间 t (s)</th>
+              <th scope="col">30 min 脱色率 η (%)</th><th scope="col">现象备注</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 反应机理 ============ -->
+  <section id="mechanism">
+    <div class="card">
+      <h2>反应机理 <span class="pill yellow">理解参数为什么这样设</span></h2>
+      <p>酸性条件下，Fe²⁺ 催化 H₂O₂ 分解产生氧化能力极强的羟基自由基（HO·），HO· 攻击亚甲基蓝（MB）分子使其发色基团破坏、蓝色褪去。主要反应：</p>
+      <ul class="eq-list">
+        <li><span>Fe<sup>2+</sup> + H<sub>2</sub>O<sub>2</sub> → Fe<sup>3+</sup> + HO· + OH<sup>−</sup></span><span class="no">(1) 产生 HO· 的主反应</span></li>
+        <li><span>Fe<sup>3+</sup> + H<sub>2</sub>O<sub>2</sub> → Fe<sup>2+</sup> + HOO· + H<sup>+</sup></span><span class="no">(2) Fe²⁺ 缓慢再生</span></li>
+        <li><span>Fe<sup>2+</sup> + HO· → Fe<sup>3+</sup> + OH<sup>−</sup></span><span class="no">(3) Fe²⁺ 过量时清除 HO·</span></li>
+        <li><span>Fe<sup>3+</sup> + HOO· → Fe<sup>2+</sup> + O<sub>2</sub> + H<sup>+</sup></span><span class="no">(4)</span></li>
+        <li><span>Fe<sup>2+</sup> + HOO· → Fe<sup>3+</sup> + HO<sub>2</sub><sup>−</sup></span><span class="no">(5)</span></li>
+        <li><span>HO· + H<sub>2</sub>O<sub>2</sub> → HOO· + H<sub>2</sub>O</span><span class="no">(6) H₂O₂ 过量时清除 HO·</span></li>
+        <li><span>HOO· + H<sub>2</sub>O<sub>2</sub> → HO· + H<sub>2</sub>O + O<sub>2</sub></span><span class="no">(7)</span></li>
+        <li><span>H<sup>+</sup> + HO· + Fe<sup>2+</sup> → H<sub>2</sub>O + Fe<sup>3+</sup></span><span class="no">(8) pH 过低时清除 HO·</span></li>
+      </ul>
+      <div class="note-grid">
+        <div class="note-card">
+          <h3>为什么最佳条件脱色约 10 s？</h3>
+          <p>HO· 生成速率 ≈ k₁·c(Fe²⁺)·c(H₂O₂)，k₁ ≈ 63 L·mol⁻¹·s⁻¹（25 ℃）。中心条件 c(Fe²⁺) = 0.20 mmol/L、c(H₂O₂) = 3.0 mmol/L 时，约 10 s 可使 MB 褪去 90%，脱色过程肉眼可完整观察。</p>
+        </div>
+        <div class="note-card">
+          <h3>Fe²⁺ 为什么不是越多越好？</h3>
+          <p>Fe²⁺ 与 MB 近似化学计量（0.20 vs 0.156 mmol/L）。低投加量组 Fe²⁺ 耗尽后脱色不完全（见表 3 模拟结果）；过量 Fe²⁺ 则按式 (3) 清除 HO·，且残留 Fe³⁺ 使溶液泛黄。</p>
+        </div>
+        <div class="note-card">
+          <h3>pH 为什么是决定性因素？</h3>
+          <p>pH 升高抑制式 (1) 并促使铁生成 Fe(OH)₃ 絮体，pH 6 以上几乎不反应；pH 过低则 H⁺ 按式 (8) 清除 HO·。最适 pH 在 3 附近——试试把 pH 滑块从 3 拖到 5 再观察。</p>
+        </div>
+        <div class="note-card">
+          <h3>HO· 去哪儿了？</h3>
+          <p>HO· 寿命仅约 10⁻⁹ s，产生后瞬间被 MB（k ≈ 10¹⁰ L·mol⁻¹·s⁻¹，扩散控制）、H₂O₂、Fe²⁺ 竞争捕获。50 mg/L MB 对 HO· 的捕获份额约 0.9，这正是脱色灵敏的原因。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 安全与操作 ============ -->
+  <section id="safety">
+    <div class="card">
+      <h2>操作与安全提示</h2>
+      <ol class="safe-list">
+        <li>30% H₂O₂ 具强腐蚀性和强氧化性，配制工作液须戴手套与护目镜，溅到皮肤立即用大量清水冲洗；工作液避光、现配现用。</li>
+        <li>稀释硫酸必须「酸入水」并搅拌；Fe²⁺ 母液须酸化配制、现配现用，出现浑浊絮状即弃用重配。</li>
+        <li>各烧杯液体加入总量不超过 5.5 mL（约体系的 5%），浓度按 100 mL 反应体积计算。</li>
+        <li>脱色时间以肉眼刚好观察不到蓝色为准，同一人、同一背景判读；快于 3 s 记为「&lt;3」。</li>
+        <li>取样 2.00 mL 后先加 0.1 mL Na₂SO₃ 淬灭液终止反应，再定容至 25 mL（稀释 12.5 倍）于 664 nm 测定；样液泛黄时滴加 1～2 滴 0.05 mol/L 稀 H₂SO₄ 至澄清。</li>
+        <li>废液含铁离子与残余 H₂O₂，倒入指定废液桶集中处理。</li>
+      </ol>
+      <p class="disclaimer">说明：本页模拟基于简化动力学模型（k₁ ≈ 63 L·mol⁻¹·s⁻¹，温度按每 10 ℃ 速率翻倍近似，pH 影响为经验因子），用于课前预习与趋势理解；所有正式数据以课堂实测为准。</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>配套讲义：《Fenton 法降解亚甲基蓝实验讲义（2026 年 9 月修订版）》 · 华南师范大学环境学院 · 水与废水物化处理技术实验</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+/* ================= 动力学模型 ================= */
+var K1 = 63;            // Fe2+ + H2O2 速率常数 L/(mol·s), 25 ℃
+var K_MB = 1e10, K_H = 2.7e7, K_FE = 3.2e8;  // HO· 竞争捕获速率常数
+var MB0 = 0.050/319.85; // 50 mg/L MB, mol/L
+var T_END = 1800;       // 30 min
+
+function phFactor(pH){ return pH <= 3 ? Math.max(0.4, 1 - 0.12*(3-pH)) : Math.pow(10, -0.8*(pH-3)); }
+function tempFactor(T){ return Math.pow(2, (T-25)/10); }
+
+function makeSim(fe, h2o2, pH, T){
+  return { mb: MB0, fe: fe, fe0: fe, h2o2: h2o2, pH: pH, T: T,
+           t: 0, t90: null, done: false };
+}
+/* 显式欧拉 + 内部子步，返回是否仍可进行 */
+function stepSim(s, dt){
+  var remain = dt;
+  while(remain > 1e-9){
+    var h = Math.min(0.01, remain);
+    remain -= h;
+    if(s.fe > 0 && s.h2o2 > 0 && s.mb > 0){
+      var k1 = K1 * phFactor(s.pH) * tempFactor(s.T);
+      var cap = K_MB*s.mb / (K_MB*s.mb + K_H*s.h2o2 + K_FE*s.fe);
+      var r = k1 * s.fe * s.h2o2;
+      var dFe = Math.min(r*h, s.fe);
+      var dMB = Math.min(cap*r*h, s.mb);
+      s.fe -= dFe; s.h2o2 -= dFe; s.mb -= dMB;
+    }
+    s.t += h;
+    if(s.t90 === null && s.mb <= 0.1*MB0){ s.t90 = s.t; }
+    if(s.t >= T_END){ break; }
+  }
+}
+/* 从当前状态快进到 30 min，返回 {t90, eta}（t90 可能为 null） */
+function finishSim(s){
+  var c = { mb:s.mb, fe:s.fe, fe0:s.fe0, h2o2:s.h2o2, pH:s.pH, T:s.T, t:s.t, t90:s.t90 };
+  while(c.t < T_END && c.mb > 1e-9){ stepSim(c, 0.05); }
+  return { t90: c.t90, eta: Math.max(0, (1 - c.mb/MB0)*100) };
+}
+
+/* ================= 颜色 ================= */
+function liquidColor(s){
+  var f = Math.max(0, Math.min(1, s.mb/MB0));
+  f = Math.pow(f, 0.75);
+  var r = 255-(255-26)*f, g = 255-(255-82)*f, b = 255-(255-205)*f;
+  var fe3 = Math.max(0, s.fe0 - s.fe);          // 已氧化为 Fe3+ 的量
+  var yf = Math.min(0.32, fe3*1300);            // 黄色调权重
+  if(s.pH >= 5){ yf = Math.min(0.45, yf + 0.15); }
+  r = r*(1-yf)+205*yf; g = g*(1-yf)+170*yf; b = b*(1-yf)+70*yf;
+  return "rgb("+(r|0)+","+(g|0)+","+(b|0)+")";
+}
+
+/* ================= 烧杯 SVG ================= */
+var uidSeq = 0;
+function beakerMarkup(){
+  var u = ++uidSeq;
+  var bubbles = "", flocs = "";
+  var bx = [42, 58, 74, 66], by = [120, 126, 118, 112];
+  for(var i=0;i<4;i++){
+    bubbles += '<circle class="bub b'+(i+1)+'" cx="'+bx[i]+'" cy="'+by[i]+'" r="3" fill="#ffffff"/>';
+  }
+  var fx = [36, 48, 62, 76, 88, 55, 70], fy = [126, 120, 128, 122, 127, 112, 116];
+  for(var j=0;j<7;j++){
+    flocs += '<circle class="floc" cx="'+fx[j]+'" cy="'+fy[j]+'" r="'+(2+(j%3))+'" fill="#8a5a2b"/>';
+  }
+  return '<svg viewBox="0 0 120 150" role="img" aria-label="Fenton 反应烧杯">'
+    + '<defs><clipPath id="cup'+u+'"><path d="M20 22 h80 v98 a12 12 0 0 1 -12 12 h-56 a12 12 0 0 1 -12 -12 z"/></clipPath></defs>'
+    + '<g clip-path="url(#cup'+u+')">'
+    + '<rect class="liquid" x="20" y="48" width="80" height="84" fill="#dbe4ff"/>'
+    + bubbles + flocs
+    + '</g>'
+    + '<path d="M20 22 h80 v98 a12 12 0 0 1 -12 12 h-56 a12 12 0 0 1 -12 -12 z" fill="none" stroke="#9aa7c7" stroke-width="3" stroke-linejoin="round"/>'
+    + '<line x1="14" y1="22" x2="106" y2="22" stroke="#9aa7c7" stroke-width="3" stroke-linecap="round"/>'
+    + '</svg>';
+}
+function paintBeaker(svg, s, reacting){
+  if(!svg) return;
+  var liq = svg.querySelector(".liquid");
+  if(liq){ liq.setAttribute("fill", liquidColor(s)); }
+  svg.classList.toggle("reacting", !!reacting && s.mb > 0 && s.fe > 0 && s.h2o2 > 0);
+  svg.classList.toggle("flocs", s.pH >= 5);
+}
+
+/* ================= 全局动画循环 ================= */
+var activeSims = [];   // {sim, svg, onTick}
+var lastFrame = null;
+var exploreSpeed = 1, gradientSpeed = 1;
+function loop(ts){
+  if(lastFrame === null){ lastFrame = ts; }
+  var dtReal = Math.min(0.1, (ts - lastFrame)/1000);
+  lastFrame = ts;
+  var any = false;
+  for(var i=0;i<activeSims.length;i++){
+    var a = activeSims[i];
+    if(!a.running){ continue; }
+    any = true;
+    stepSim(a.sim, dtReal * a.speed);
+    paintBeaker(a.svg, a.sim, true);
+    if(a.onTick){ a.onTick(a.sim); }
+    if(a.sim.t >= T_END || a.sim.mb <= 0.005*MB0){
+      a.running = false;
+      paintBeaker(a.svg, a.sim, false);
+      if(a.onEnd){ a.onEnd(a.sim); }
+    }
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ================= 探索模式 ================= */
+var explore = {
+  sim: null, svg: null, running: false,
+  samples: [], canvas: document.getElementById("curve")
+};
+function readParams(){
+  var feMl  = parseFloat(document.getElementById("in-fe").value);
+  var hMl   = parseFloat(document.getElementById("in-h2o2").value);
+  var pH    = parseFloat(document.getElementById("in-ph").value);
+  var T     = parseFloat(document.getElementById("in-temp").value);
+  return { feMl: feMl, hMl: hMl, pH: pH, T: T,
+           fe: feMl*0.1/1000, h2o2: hMl*1.0/1000 };  // 10 mmol/L 母液、0.10 mol/L 工作液、100 mL 体系
+}
+function fmtTime(t){
+  if(t === null || t === undefined){ return "—"; }
+  if(t >= T_END){ return ">1800"; }
+  return t < 100 ? t.toFixed(1) : Math.round(t).toString();
+}
+function updatePredict(){
+  var pr = readParams();
+  var box = document.getElementById("predict-box");
+  var probe = makeSim(pr.fe, pr.h2o2, pr.pH, pr.T);
+  var res = finishSim(probe);
+  var slow = (res.t90 === null || res.t90 > 30);
+  box.className = "predict" + (slow ? " warnbox" : "");
+  var tTxt = res.t90 === null ? "30 min 内无法完全脱色" : "脱色时间 ≈ <strong>" + fmtTime(res.t90) + " s</strong>";
+  box.innerHTML = "当前参数预测：" + tTxt + "；30 min 脱色率 ≈ <strong>" + res.eta.toFixed(0) + "%</strong>"
+    + (slow ? "<br>提示：偏慢或脱色不完全。可提高 Fe²⁺/H₂O₂ 投加量，或检查 pH 是否偏高；观察时可调大模拟速度。"
+              : "<br>提示：8～15 s 与课堂设计目标（约 10 s）一致，可开始模拟观察。");
+}
+function updateOutputs(){
+  var pr = readParams();
+  document.getElementById("out-fe").textContent = pr.feMl.toFixed(1) + " mL · c(Fe²⁺) = " + (pr.feMl*0.1).toFixed(2) + " mmol/L";
+  document.getElementById("out-h2o2").textContent = pr.hMl.toFixed(1) + " mL · c(H₂O₂) = " + pr.hMl.toFixed(1) + " mmol/L";
+  document.getElementById("out-ph").textContent = pr.pH.toFixed(1);
+  document.getElementById("out-temp").textContent = pr.T.toFixed(0) + " ℃";
+}
+function drawCurve(){
+  var cv = explore.canvas, ctx = cv.getContext("2d");
+  var dpr = window.devicePixelRatio || 1;
+  var W = cv.clientWidth, H = cv.clientHeight;
+  if(cv.width !== W*dpr || cv.height !== H*dpr){ cv.width = W*dpr; cv.height = H*dpr; }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  var padL = 46, padR = 16, padT = 14, padB = 34;
+  var pw = W-padL-padR, ph = H-padT-padB;
+  var tmax = 30;
+  for(var i=0;i<explore.samples.length;i++){ if(explore.samples[i][0] > tmax){ tmax = explore.samples[i][0]; } }
+  tmax = Math.ceil(tmax*1.08);
+  ctx.strokeStyle = "#E3E7F5"; ctx.fillStyle = "#5A6072";
+  ctx.font = "11px sans-serif"; ctx.lineWidth = 1;
+  for(var g=0; g<=4; g++){
+    var y = padT + ph*g/4;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+pw,y); ctx.stroke();
+    ctx.fillText((100-25*g)+"%", 8, y+4);
+  }
+  var xt = tmax <= 60 ? 10 : (tmax <= 300 ? 60 : 300);
+  for(var x=0; x<=tmax; x+=xt){
+    var px = padL + pw*x/tmax;
+    ctx.beginPath(); ctx.moveTo(px,padT); ctx.lineTo(px,padT+ph); ctx.stroke();
+    ctx.fillText(x+"", px-6, padT+ph+16);
+  }
+  ctx.fillText("t / s", padL+pw-34, padT+ph+30);
+  ctx.strokeStyle = "#1F2433";
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+ph); ctx.lineTo(padL+pw,padT+ph); ctx.stroke();
+  if(explore.samples.length > 1){
+    ctx.strokeStyle = "#5B6CFF"; ctx.lineWidth = 2.5; ctx.beginPath();
+    for(var k=0;k<explore.samples.length;k++){
+      var sx = padL + pw*explore.samples[k][0]/tmax;
+      var sy = padT + ph*(1-explore.samples[k][1]/100);
+      if(k===0){ ctx.moveTo(sx,sy); } else { ctx.lineTo(sx,sy); }
+    }
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  }
+  if(explore.sim && explore.sim.t90 !== null && explore.sim.t90 <= tmax){
+    var tx = padL + pw*explore.sim.t90/tmax;
+    ctx.strokeStyle = "#FF7AB6"; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(tx,padT); ctx.lineTo(tx,padT+ph); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#FF7AB6";
+    ctx.fillText("脱色时间 " + fmtTime(explore.sim.t90) + " s", Math.min(tx+6, padL+pw-110), padT+14);
+  }
+}
+function exploreTick(s){
+  document.getElementById("st-time").textContent = s.t < 100 ? s.t.toFixed(1)+" s" : Math.round(s.t)+" s";
+  document.getElementById("st-mb").textContent = Math.max(0, s.mb/MB0*100).toFixed(0)+"%";
+  document.getElementById("st-eta").textContent = Math.max(0, (1-s.mb/MB0)*100).toFixed(0)+"%";
+  document.getElementById("st-t90").textContent = s.t90 === null ? "—" : fmtTime(s.t90)+" s";
+  var last = explore.samples[explore.samples.length-1];
+  if(!last || s.t - last[0] >= 0.2){ explore.samples.push([s.t, Math.max(0, s.mb/MB0*100)]); }
+  drawCurve();
+}
+function resetExplore(){
+  var pr = readParams();
+  explore.sim = makeSim(pr.fe, pr.h2o2, pr.pH, pr.T);
+  explore.running = false;
+  explore.samples = [[0,100]];
+  activeSims = activeSims.filter(function(a){ return a !== explore.entry; });
+  explore.entry = { sim: explore.sim, svg: explore.svg, running: false, speed: exploreSpeed, onTick: exploreTick };
+  activeSims.push(explore.entry);
+  paintBeaker(explore.svg, explore.sim, false);
+  document.getElementById("st-time").textContent = "0.0 s";
+  document.getElementById("st-mb").textContent = "100%";
+  document.getElementById("st-eta").textContent = "0%";
+  document.getElementById("st-t90").textContent = "—";
+  document.getElementById("btn-start").textContent = "开始反应";
+  drawCurve();
+}
+(function initExplore(){
+  document.getElementById("explore-beaker").innerHTML = beakerMarkup();
+  explore.svg = document.querySelector("#explore-beaker svg");
+  ["in-fe","in-h2o2","in-ph","in-temp"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", function(){
+      updateOutputs(); updatePredict();
+      if(!explore.running){ resetExplore(); }
+    });
+  });
+  document.querySelectorAll("[data-speed]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("[data-speed]").forEach(function(b){ b.classList.remove("on"); });
+      btn.classList.add("on");
+      exploreSpeed = parseFloat(btn.getAttribute("data-speed"));
+      if(explore.entry){ explore.entry.speed = exploreSpeed; }
+    });
+  });
+  document.getElementById("btn-start").addEventListener("click", function(){
+    if(!explore.entry){ return; }
+    if(explore.sim.t90 !== null && explore.sim.mb <= 0.1*MB0 && !explore.running){ resetExplore(); }
+    explore.running = !explore.running;
+    explore.entry.running = explore.running;
+    this.textContent = explore.running ? "暂停" : "继续";
+    if(!explore.running){ paintBeaker(explore.svg, explore.sim, false); }
+  });
+  document.getElementById("btn-reset").addEventListener("click", resetExplore);
+  document.getElementById("btn-preset").addEventListener("click", function(){
+    document.getElementById("in-fe").value = 2;
+    document.getElementById("in-h2o2").value = 3;
+    document.getElementById("in-ph").value = 3;
+    document.getElementById("in-temp").value = 25;
+    updateOutputs(); updatePredict(); resetExplore();
+  });
+  updateOutputs(); updatePredict(); resetExplore();
+})();
+
+/* ================= 梯度实验模式 ================= */
+var GRAD = {
+  g3: { doses: [[0.5,3.0],[1.0,3.0],[1.5,3.0],[2.0,3.0],[2.5,3.0]], pH: 3,
+        label: function(d){ return "Fe²⁺ " + d[0].toFixed(1) + " mL<br>c = " + (d[0]*0.1).toFixed(2) + " mmol/L"; } },
+  g4: { doses: [[2.0,0.5],[2.0,1.0],[2.0,2.0],[2.0,3.0],[2.0,4.0]], pH: 3,
+        label: function(d){ return "H₂O₂ " + d[1].toFixed(1) + " mL<br>c = " + d[1].toFixed(1) + " mmol/L"; } },
+  g5: { doses: [[2.0,3.0],[2.0,3.0],[2.0,3.0],[2.0,3.0],[2.0,3.0]], pH: [3,4,5,6,8],
+        label: function(d,i){ return "pH " + GRAD.g5.pH[i].toFixed(1); } }
+};
+var gradient = { pane: "g3", groups: {} };
+
+function buildGradient(){
+  Object.keys(GRAD).forEach(function(key){
+    var cfg = GRAD[key];
+    var bench = document.getElementById("bench-" + key);
+    var tbody = document.querySelector("#table-" + key + " tbody");
+    var group = { key: key, items: [] };
+    cfg.doses.forEach(function(d, i){
+      var pH = Array.isArray(cfg.pH) ? cfg.pH[i] : cfg.pH;
+      var holder = document.createElement("div");
+      holder.className = "mini-beaker";
+      holder.innerHTML = beakerMarkup()
+        + '<div class="t90" id="t90-' + key + "-" + i + '"></div>'
+        + '<div class="lbl">' + cfg.label(d, i) + '</div>';
+      bench.appendChild(holder);
+      var sim = makeSim(d[0]*0.1/1000, d[1]*1.0/1000, pH, 25);
+      var item = {
+        sim: sim, svg: holder.querySelector("svg"), dose: d, pH: pH, idx: i,
+        entry: null, reported: false
+      };
+      item.entry = { sim: sim, svg: item.svg, running: false, speed: gradientSpeed,
+        onTick: function(s){ gradientTick(group, item, s); },
+        onEnd: function(s){ gradientEnd(group, item, s); } };
+      activeSims.push(item.entry);
+      group.items.push(item);
+    });
+    /* 表格 */
+    var html = "";
+    cfg.doses.forEach(function(d, i){
+      var pH = Array.isArray(cfg.pH) ? cfg.pH[i] : cfg.pH;
+      if(key === "g3"){
+        html += "<tr><td>" + (i+1) + "</td><td>" + d[0].toFixed(1) + "</td><td>" + (d[0]*0.1).toFixed(2)
+          + "</td><td>" + d[1].toFixed(1) + "</td><td id='c-g3-t-" + i + "'>—</td><td id='c-g3-e-" + i + "'>—</td></tr>";
+      }else if(key === "g4"){
+        html += "<tr><td>" + (i+1) + "</td><td>" + d[1].toFixed(1) + "</td><td>" + d[1].toFixed(1)
+          + "</td><td>" + d[0].toFixed(1) + "</td><td id='c-g4-t-" + i + "'>—</td><td id='c-g4-e-" + i + "'>—</td></tr>";
+      }else{
+        html += "<tr><td>" + (i+1) + "</td><td>" + pH.toFixed(1) + "</td><td id='c-g5-t-" + i
+          + "'>—</td><td id='c-g5-e-" + i + "'>—</td><td id='c-g5-n-" + i + "'>—</td></tr>";
+      }
+    });
+    tbody.innerHTML = html;
+    gradient.groups[key] = group;
+    resetGroup(key);
+  });
+}
+function gradientTick(group, item, s){
+  var badge = document.getElementById("t90-" + group.key + "-" + item.idx);
+  if(s.t90 !== null && !item.reported){
+    item.reported = true;
+    badge.textContent = "脱色 " + fmtTime(s.t90) + " s";
+    badge.classList.add("show");
+    var cell = document.getElementById("c-" + group.key + "-t-" + item.idx);
+    cell.textContent = fmtTime(s.t90);
+    cell.classList.add("filled");
+    if(group.key === "g5"){
+      var note = document.getElementById("c-g5-n-" + item.idx);
+      note.textContent = "蓝色褪去";
+      note.classList.add("filled");
+    }
+  }
+}
+function gradientEnd(group, item, s){
+  var res = finishSim(s);
+  var eCell = document.getElementById("c-" + group.key + "-e-" + item.idx);
+  eCell.textContent = res.eta.toFixed(0);
+  eCell.classList.add("filled");
+  if(res.t90 !== null && !item.reported){
+    item.reported = true;
+    var tCell = document.getElementById("c-" + group.key + "-t-" + item.idx);
+    tCell.textContent = fmtTime(res.t90);
+    tCell.classList.add("filled");
+  }
+  if(group.key === "g5" && res.t90 === null){
+    var nCell = document.getElementById("c-g5-n-" + item.idx);
+    nCell.textContent = item.pH >= 6 ? "长时间不褪色" : "脱色缓慢、不完全";
+  }
+}
+function resetGroup(key){
+  var group = gradient.groups[key];
+  if(!group){ return; }
+  group.items.forEach(function(item){
+    item.sim.mb = MB0; item.sim.fe = item.sim.fe0; item.sim.h2o2 = item.dose[1]*1.0/1000;
+    item.sim.t = 0; item.sim.t90 = null;
+    item.entry.running = false; item.reported = false;
+    paintBeaker(item.svg, item.sim, false);
+    var badge = document.getElementById("t90-" + key + "-" + item.idx);
+    badge.textContent = ""; badge.classList.remove("show");
+    ["t","e","n"].forEach(function(sfx){
+      var c = document.getElementById("c-" + key + "-" + sfx + "-" + item.idx);
+      if(c){ c.textContent = "—"; c.classList.remove("filled"); }
+    });
+  });
+  document.getElementById("btn-gstart").textContent = "开始反应";
+}
+function setGroupRunning(key, running){
+  var group = gradient.groups[key];
+  group.items.forEach(function(item){
+    item.entry.running = running;
+    paintBeaker(item.svg, item.sim, running);
+  });
+}
+(function initGradient(){
+  buildGradient();
+  document.querySelectorAll("[data-pane]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("[data-pane]").forEach(function(b){ b.setAttribute("aria-selected","false"); });
+      btn.setAttribute("aria-selected","true");
+      gradient.pane = btn.getAttribute("data-pane");
+      ["g3","g4","g5"].forEach(function(k){
+        document.getElementById("pane-"+k).hidden = (k !== gradient.pane);
+      });
+      document.getElementById("btn-gstart").textContent = "开始反应";
+    });
+  });
+  document.querySelectorAll("[data-gspeed]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("[data-gspeed]").forEach(function(b){ b.classList.remove("on"); });
+      btn.classList.add("on");
+      gradientSpeed = parseFloat(btn.getAttribute("data-gspeed"));
+      Object.keys(gradient.groups).forEach(function(k){
+        gradient.groups[k].items.forEach(function(it){ it.entry.speed = gradientSpeed; });
+      });
+    });
+  });
+  document.getElementById("btn-gstart").addEventListener("click", function(){
+    var group = gradient.groups[gradient.pane];
+    var anyRunning = group.items.some(function(it){ return it.entry.running; });
+    if(anyRunning){
+      setGroupRunning(gradient.pane, false);
+      this.textContent = "继续";
+    }else{
+      var allDone = group.items.every(function(it){ return it.sim.t >= T_END || it.sim.mb <= 1e-9; });
+      if(allDone){ resetGroup(gradient.pane); }
+      setGroupRunning(gradient.pane, true);
+      this.textContent = "暂停";
+    }
+  });
+  document.getElementById("btn-gfast").addEventListener("click", function(){
+    var group = gradient.groups[gradient.pane];
+    setGroupRunning(gradient.pane, false);
+    document.getElementById("btn-gstart").textContent = "开始反应";
+    group.items.forEach(function(item){
+      var res = finishSim(item.sim);
+      /* 直接按快进结果设置终态颜色 */
+      item.sim.mb = Math.max(0, MB0*(1-res.eta/100));
+      if(res.t90 !== null){ item.sim.t90 = res.t90; }
+      item.sim.t = T_END;
+      paintBeaker(item.svg, item.sim, false);
+      var tCell = document.getElementById("c-" + group.key + "-t-" + item.idx);
+      var eCell = document.getElementById("c-" + group.key + "-e-" + item.idx);
+      if(res.t90 !== null){
+        tCell.textContent = fmtTime(res.t90); tCell.classList.add("filled");
+        var badge = document.getElementById("t90-" + group.key + "-" + item.idx);
+        badge.textContent = "脱色 " + fmtTime(res.t90) + " s"; badge.classList.add("show");
+        item.reported = true;
+      }else{
+        tCell.textContent = ">1800"; tCell.classList.add("filled");
+      }
+      eCell.textContent = res.eta.toFixed(0); eCell.classList.add("filled");
+      if(group.key === "g5"){
+        var nCell = document.getElementById("c-g5-n-" + item.idx);
+        nCell.textContent = res.t90 !== null ? "蓝色褪去" : (item.pH >= 6 ? "长时间不褪色" : "脱色缓慢、不完全");
+        nCell.classList.add("filled");
+      }
+    });
+  });
+  document.getElementById("btn-greset").addEventListener("click", function(){ resetGroup(gradient.pane); });
+  document.getElementById("btn-gcopy").addEventListener("click", function(){
+    var key = gradient.pane;
+    var table = document.getElementById("table-" + key);
+    var lines = [];
+    table.querySelectorAll("tr").forEach(function(tr){
+      var cells = [];
+      tr.querySelectorAll("th,td").forEach(function(c){ cells.push(c.textContent.trim()); });
+      if(cells.length){ lines.push(cells.join("\t")); }
+    });
+    var text = lines.join("\n");
+    var btn = this;
+    function ok(){ var old = btn.textContent; btn.textContent = "已复制 ✓"; setTimeout(function(){ btn.textContent = old; }, 1600); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok, function(){ fallback(); });
+    }else{ fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); ok(); }catch(e){}
+      document.body.removeChild(ta);
+    }
+  });
+})();
+
+/* ================= 模式切换 ================= */
+(function initMode(){
+  var b1 = document.getElementById("mode-explore-btn"), b2 = document.getElementById("mode-gradient-btn");
+  function show(which){
+    document.getElementById("mode-explore").hidden = (which !== "explore");
+    document.getElementById("mode-gradient").hidden = (which !== "gradient");
+    b1.setAttribute("aria-selected", which === "explore" ? "true" : "false");
+    b2.setAttribute("aria-selected", which === "gradient" ? "true" : "false");
+    if(which === "explore"){ drawCurve(); }
+  }
+  b1.addEventListener("click", function(){ show("explore"); });
+  b2.addEventListener("click", function(){ show("gradient"); });
+})();
+})();
+</script>
+
+</body></html>
